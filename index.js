@@ -1,12 +1,10 @@
 "use strict";
 
-const { map, factory, getRsc, createRsc, removeRsc } = require ("./model");
-const request = require ("./request");
-
-let sid, revision = 0;
+const { map, rscAttrs, factory, getRsc, createRsc, removeRsc } = require ("./model");
+const {setSessionId, setUrl, request} = require ("./request");
 
 async function load () {
-	let data = await request (sid, {
+	let data = await request ({
 		fn: "getAll"
 	});
 	Object.keys (rscAttrs).forEach (rsc => {
@@ -19,16 +17,24 @@ async function load () {
 			map [rsc][o.get ("id")] = o;
 		});
 		if (rsc == "class" || rsc == "view") {
-			Object.keys (data [rsc]).forEach (id => {
-				let o = data [rsc][id];
+			Object.keys (map [rsc]).forEach (id => {
+				let o = map [rsc][id];
 
 				map [rsc][o.getPath ()] = o;
 			});
 		}
-		if (rsc == "classAttr" || rsc == "viewAttr") {
-			Object.keys (data [rsc]).forEach (id => {
-				let o = data [rsc][id];
-				let oo = data [rsc.substr (0, rsc.length - 4)][o.get (rsc)];
+		if (rsc == "classAttr") {
+			Object.keys (map ["classAttr"]).forEach (id => {
+				let o = map ["classAttr"][id];
+				let oo = map ["class"][o.get ("class")];
+				
+				oo.attrs.push (o);
+			});
+		}
+		if (rsc == "viewAttr") {
+			Object.keys (map ["viewAttr"]).forEach (id => {
+				let o = map ["viewAttr"][id];
+				let oo = map ["view"][o.get ("view")];
 				
 				oo.attrs.push (o);
 			});
@@ -36,45 +42,52 @@ async function load () {
 	});
 };
 
+let informerId, revision = 0;
+
 async function informer () {
-	let data = await request (sid, {
+	let data = await request ({
 		fn: "getNews",
 		revision
 	});
 	revision = data.revision;
 	data.objects.forEach (id => delete map ["object"][id]);
 	
-	setTimeout (informer, 5000);
+	informerId = setTimeout (informer, 5000);
 };
 
-async function auth ({username, password}) {
-	let data = await request (sid, {
+async function auth ({url, username, password}) {
+	setUrl (url);
+	
+	let data = await request ({
 		fn: "auth",
 		username,
 		password
 	});
-	if (data.sid) {
-		sid = data.sid;
+	
+	if (data.sessionId) {
+		setSessionId (data.sessionId);
 	}
 	await load ();
 	informer ();
+	
+	return data.sessionId;
 };
 
 async function startTransaction (description) {
-	await request (sid, {
+	await request ({
 		fn: "startTransaction",
 		description
 	});
 };
 
 async function commitTransaction () {
-	await request (sid, {
+	await request ({
 		fn: "commitTransaction"
 	});
 };
 
 async function rollbackTransaction () {
-	await request (sid, {
+	await request ({
 		fn: "rollbackTransaction"
 	});
 };
@@ -140,9 +153,19 @@ async function removeViewAttr (id) {
 };
 
 async function execute (sql) {
-	await request (sid, {
+	return await request ({
 		fn: "execute",
 		sql
+	});
+};
+
+async function getData ({view, offset, limit, timeOffsetMin}) {
+	return await request ({
+		fn: "getData",
+		view,
+		offset,
+		limit,
+		timeOffsetMin
 	});
 };
 

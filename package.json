@@ -1,19 +1,22 @@
 {
-  "name": "objectum-client",
-  "version": "1.0.0",
-  "description": "Isomorphic client for objectum platform",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/objectum/objectum-client.git"
-  },
-  "author": "Dmitriy Samortsev",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/objectum/objectum-client/issues"
-  },
-  "homepage": "https://github.com/objectum/objectum-client#readme"
+	"name": "objectum-client",
+	"version": "1.0.3",
+	"description": "Isomorphic client for objectum platform",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/objectum/objectum-client.git"
+	},
+	"author": "Dmitriy Samortsev",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/objectum/objectum-client/issues"
+	},
+	"homepage": "https://github.com/objectum/objectum-client#readme",
+	"dependencies": {
+		"why-is-node-running": "^2.0.3"
+	}
 }

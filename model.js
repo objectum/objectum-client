@@ -1,6 +1,6 @@
 "use strict";
 
-const request = require ("./request");
+const {request} = require ("./request");
 
 let map = {
 	"sid": null,
@@ -12,16 +12,16 @@ let map = {
 };
 const rscAttrs = {
 	"class": [
-		"id", "parent", "name", "code", "description", "format", "view", "type", "start", "end", "schema", "record"
+		"id", "parent", "name", "code", "description", "order", "format", "view", "opts", "start", "end", "schema", "record"
 	],
 	"classAttr": [
-		"id", "class", "name", "code", "description", "type", "order", "notNull", "secure", "unique", "validFunc", "removeRule", "start", "end", "schema", "record"
+		"id", "class", "name", "code", "description", "order", "type", "notNull", "secure", "unique", "validFunc", "removeRule", "opts", "start", "end", "schema", "record"
 	],
 	"view": [
-		"id", "parent", "name", "code", "description", "layout", "class", "query", "system", "order", "iconCls", "start", "end", "schema", "record"
+		"id", "parent", "name", "code", "description", "order", "query", "layout", "iconCls", "system", "class", "opts", "start", "end", "schema", "record"
 	],
 	"viewAttr": [
-		"id", "view", "name", "code", "description", "class", "classAttr", "subject", "order", "sortKind", "sortOrder", "area", "columnWidth", "start", "end", "schema", "record"
+		"id", "view", "name", "code", "description", "order", "classAttr", "area", "columnWidth", "opts", "start", "end", "schema", "record"
 	],
 };
 
@@ -34,14 +34,18 @@ class _Rsc {
 		me.originalData = {};
 		me.removed = false;
 
+		let initValue = function (a, v) {
+			me.data [a] = v;
+			me.originalData [a] = v;
+		};
 		if (data) {
 			Object.keys (data).forEach (a => {
-				me.set (a, data [a]);
+				initValue (a, data [a]);
 			});
 		}
 		if (row) {
 			for (let i = 0; i < row.length; i ++) {
-				me.set (rscAttrs [rsc][i], row [i]);
+				initValue (rscAttrs [rsc][i], row [i]);
 			}
 		}
 	}
@@ -69,19 +73,27 @@ class _Rsc {
 		if (me.removed) {
 			return await removeRsc (me.rsc, me.get ("id"));
 		}
-		let attrs = [];
+		let attrs = {};
 		
-		_.each (me.data, function (v, a) {
-			if (_.isDate (me.originalData [a])) {
+		for (let a in me.data) {
+			if (me.originalData [a] instanceof Date) {
 				me.originalData [a] = me.originalData [a].toISOString ();
 			}
-			if (_.isDate (me.data [a])) {
+			if (me.data [a] instanceof Date) {
 				me.data [a] = me.data [a].toISOString ();
 			}
 			if (!me.originalData.hasOwnProperty (a) || me.originalData [a] != me.data [a]) {
-				attrs.push (a);
+				attrs [a] = me.data [a];
 			}
-		});
+		}
+		if (Object.keys (attrs).length) {
+			await request ({
+				fn: "set",
+				rsc: me.rsc,
+				id: me.get ("id"),
+				...attrs
+			});
+		}
 	}
 
 	getPath (o, path = []) {
@@ -94,7 +106,7 @@ class _Rsc {
 		path.unshift (o.get ("code"));
 		
 		if (o.get ("parent")) {
-			this.getPath (map [me.rsc], map [o.get ("parent")], path);
+			this.getPath (map [me.rsc][o.get ("parent")], path);
 		} else {
 			return path.join (".");
 		}
