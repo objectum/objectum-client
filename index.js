@@ -1,6 +1,6 @@
 "use strict";
 
-const { map, rscAttrs, factory, getRsc, createRsc, removeRsc } = require ("./model");
+const {map, rscAttrs, factory, getRsc, createRsc, removeRsc} = require ("./model");
 const {setSessionId, setUrl, request} = require ("./request");
 
 async function load () {
@@ -152,20 +152,19 @@ async function removeViewAttr (id) {
 	return await removeRsc ("viewAttr", id);
 };
 
+/*
 async function execute (sql) {
 	return await request ({
 		fn: "execute",
 		sql
 	});
 };
+*/
 
-async function getData ({view, offset, limit, timeOffsetMin}) {
+async function getData (opts) {
 	return await request ({
 		fn: "getData",
-		view,
-		offset,
-		limit,
-		timeOffsetMin
+		...opts
 	});
 };
 
@@ -189,6 +188,7 @@ module.exports = {
 	createViewAttr,
 	getViewAttr,
 	removeViewAttr,
+	getData,
 	map,
 	factory,
 	getRsc,
