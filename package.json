@@ -1,6 +1,6 @@
 {
 	"name": "objectum-client",
-	"version": "1.0.4",
+	"version": "1.0.8",
 	"description": "Isomorphic client for objectum platform",
 	"main": "index.js",
 	"scripts": {
@@ -11,12 +11,9 @@
 		"url": "git+https://github.com/objectum/objectum-client.git"
 	},
 	"author": "Dmitriy Samortsev",
-	"license": "ISC",
+	"license": "MIT",
 	"bugs": {
 		"url": "https://github.com/objectum/objectum-client/issues"
 	},
-	"homepage": "https://github.com/objectum/objectum-client#readme",
-	"dependencies": {
-		"why-is-node-running": "^2.0.3"
-	}
+	"homepage": "https://github.com/objectum/objectum-client#readme"
 }

@@ -3,7 +3,7 @@
 let sid, url, http, host, port, path;
 
 function isServer () {
-	if (typeof global === "undefined" && typeof window !== "undefined") {
+	if (typeof window !== "undefined") {
 		return false;
 	} else {
 		return true;
