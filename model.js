@@ -25,6 +25,23 @@ const rscAttrs = {
 	],
 };
 
+function parseRecDates (rec) {
+	for (let a in rec) {
+		let v = rec [a];
+
+		if (v && v.type) {
+			if (v.type == "date") {
+				let tokens = v.value.split ("-");
+				
+				rec [a] = new Date (tokens [0], tokens [1] - 1, tokens [2]);
+			}
+			if (v.type == "datetime") {
+				rec [a] = new Date (Date.parse (v.value));
+			}
+		}
+	}
+};
+
 class _Rsc {
 	constructor ({rsc, row, data}) {
 		let me = this;
@@ -38,6 +55,9 @@ class _Rsc {
 			me.data [a] = v;
 			me.originalData [a] = v;
 		};
+		parseRecDates (me.data);
+		parseRecDates (me.originalData);
+		
 		if (data) {
 			Object.keys (data).forEach (a => {
 				initValue (a, data [a]);
@@ -57,6 +77,11 @@ class _Rsc {
 	set (a, v) {
 		let me = this;
 		
+		if (typeof a == "object") {
+			Object.keys (a, aa => {
+				me.set (aa, a [aa]);
+			});
+		}
 		if (a == "id" && me.data.id) {
 			return;
 		}
@@ -106,7 +131,7 @@ class _Rsc {
 		path.unshift (o.get ("code"));
 		
 		if (o.get ("parent")) {
-			this.getPath (map [me.rsc][o.get ("parent")], path);
+			return this.getPath (map [me.rsc][o.get ("parent")], path);
 		} else {
 			return path.join (".");
 		}
@@ -223,5 +248,6 @@ module.exports = {
 	factory,
 	getRsc,
 	createRsc,
-	removeRsc
+	removeRsc,
+	parseRecDates
 };

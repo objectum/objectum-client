@@ -1,18 +1,18 @@
 "use strict";
 
-const {map, rscAttrs, factory, getRsc, createRsc, removeRsc} = require ("./model");
-const {setSessionId, setUrl, request} = require ("./request");
+const {map, rscAttrs, factory, getRsc, createRsc, removeRsc, parseRecDates} = require ("./model");
+const {setSessionId, getSessionId, setUrl, getUrl, request} = require ("./request");
 
 async function load () {
 	let data = await request ({
-		fn: "getAll"
+		"fn": "getAll"
 	});
 	Object.keys (rscAttrs).forEach (rsc => {
 		data [rsc].forEach (row => {
 			let o = factory ({rsc, row});
 			
 			if (rsc == "class" || rsc == "view") {
-				o.attrs = [];
+				o.attrs = {};
 			}
 			map [rsc][o.get ("id")] = o;
 		});
@@ -28,7 +28,7 @@ async function load () {
 				let o = map ["classAttr"][id];
 				let oo = map ["class"][o.get ("class")];
 				
-				oo.attrs.push (o);
+				oo.attrs [o.get ("code")] = o;
 			});
 		}
 		if (rsc == "viewAttr") {
@@ -36,7 +36,7 @@ async function load () {
 				let o = map ["viewAttr"][id];
 				let oo = map ["view"][o.get ("view")];
 				
-				oo.attrs.push (o);
+				oo.attrs [o.get ("code")] = o;
 			});
 		}
 	});
@@ -46,7 +46,7 @@ let informerId, revision = 0;
 
 async function informer () {
 	let data = await request ({
-		fn: "getNews",
+		"fn": "getNews",
 		revision
 	});
 	revision = data.revision;
@@ -56,10 +56,11 @@ async function informer () {
 };
 
 async function auth ({url, username, password}) {
-	setUrl (url);
-	
+	if (url) {
+		setUrl (url);
+	}
 	let data = await request ({
-		fn: "auth",
+		"fn": "auth",
 		username,
 		password
 	});
@@ -75,20 +76,20 @@ async function auth ({url, username, password}) {
 
 async function startTransaction (description) {
 	await request ({
-		fn: "startTransaction",
+		"fn": "startTransaction",
 		description
 	});
 };
 
 async function commitTransaction () {
 	await request ({
-		fn: "commitTransaction"
+		"fn": "commitTransaction"
 	});
 };
 
 async function rollbackTransaction () {
 	await request ({
-		fn: "rollbackTransaction"
+		"fn": "rollbackTransaction"
 	});
 };
 
@@ -162,9 +163,20 @@ async function execute (sql) {
 */
 
 async function getData (opts) {
-	return await request ({
-		fn: "getData",
+	let result = await request ({
+		"fn": "getData",
 		...opts
+	});
+	result.recs.forEach (rec => {
+		parseRecDates (rec);
+	});
+	return result;
+};
+
+async function getDict (id) {
+	return await request ({
+		"fn": "getDict",
+		"class": id
 	});
 };
 
@@ -189,9 +201,14 @@ module.exports = {
 	getViewAttr,
 	removeViewAttr,
 	getData,
+	getDict,
 	map,
 	factory,
 	getRsc,
 	createRsc,
-	removeRsc
+	removeRsc,
+	setSessionId,
+	getSessionId,
+	setUrl,
+	getUrl
 };
