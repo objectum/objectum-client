@@ -209,6 +209,9 @@ async function getRsc (rsc, id) {
 			id
 		});
 		o = factory ({rsc, data});
+
+		map [rsc][o.get ("id")] = o;
+		map [rsc][o.getPath ()] = o;
 	}
 	return o;
 };
