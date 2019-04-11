@@ -8,7 +8,8 @@ let map = {
 	"classAttr": {},
 	"view": {},
 	"viewAttr": {},
-	"object": {}
+	"object": {},
+	"dict": {}
 };
 const rscAttrs = {
 	"class": [

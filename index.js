@@ -174,10 +174,16 @@ async function getData (opts) {
 };
 
 async function getDict (id) {
-	return await request ({
+	if (map ["dict"][id]) {
+		return map ["dict"][id];
+	}
+	let recs = await request ({
 		"fn": "getDict",
 		"class": id
 	});
+	map ["dict"][id] = recs;
+	
+	return recs;
 };
 
 module.exports = {
