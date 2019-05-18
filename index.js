@@ -29,6 +29,7 @@ async function load () {
 				let oo = map ["class"][o.get ("class")];
 				
 				oo.attrs [o.get ("code")] = o;
+				map ["classAttr"][oo.getPath () + "." + o.get ("code")] = o;
 			});
 		}
 		if (rsc == "viewAttr") {
@@ -37,6 +38,7 @@ async function load () {
 				let oo = map ["view"][o.get ("view")];
 				
 				oo.attrs [o.get ("code")] = o;
+				map ["viewAttr"][oo.getPath () + "." + o.get ("code")] = o;
 			});
 		}
 	});
@@ -105,20 +107,12 @@ async function removeObject (id) {
 	return await removeRsc ("object", id);
 };
 
-async function getClass (id) {
-	return await getRsc ("class", id);
-};
-
 async function createClass (attrs) {
 	return await createRsc ("class", attrs);
 };
 
 async function removeClass (id) {
 	return await removeRsc ("class", id);
-};
-
-async function getView (id) {
-	return await getRsc ("view", id);
 };
 
 async function createView (attrs) {
@@ -129,10 +123,6 @@ async function removeView (id) {
 	return await removeRsc ("view", id);
 };
 
-async function getClassAttr (id) {
-	return await getRsc ("classAttr", id);
-};
-
 async function createClassAttr (attrs) {
 	return await createRsc ("classAttr", attrs);
 };
@@ -141,16 +131,52 @@ async function removeClassAttr (id) {
 	return await removeRsc ("classAttr", id);
 };
 
-async function getViewAttr (id) {
-	return await getRsc ("viewAttr", id);
-};
-
 async function createViewAttr (attrs) {
 	return await createRsc ("viewAttr", attrs);
 };
 
 async function removeViewAttr (id) {
 	return await removeRsc ("viewAttr", id);
+};
+
+function getClass (id) {
+	let o = map ["class"][id];
+	
+	if (o) {
+		return o;
+	} else {
+		throw new Error (`unknown class: ${id}`);
+	}
+};
+
+function getView (id) {
+	let o = map ["view"][id];
+	
+	if (o) {
+		return o;
+	} else {
+		throw new Error (`unknown view: ${id}`);
+	}
+};
+
+function getClassAttr (id) {
+	let o = map ["classAttr"][id];
+	
+	if (o) {
+		return o;
+	} else {
+		throw new Error (`unknown class attr: ${id}`);
+	}
+};
+
+function getViewAttr (id) {
+	let o = map ["viewAttr"][id];
+	
+	if (o) {
+		return o;
+	} else {
+		throw new Error (`unknown view attr: ${id}`);
+	}
 };
 
 /*

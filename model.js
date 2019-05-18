@@ -43,6 +43,52 @@ function parseRecDates (rec) {
 	}
 };
 
+async function getRsc (rsc, id) {
+	let o = map [rsc][id];
+	
+	if (!o) {
+		let data = await request ({
+			fn: "get",
+			rsc,
+			id
+		});
+		o = factory ({rsc, data});
+		
+		map [rsc][o.get ("id")] = o;
+		map [rsc][o.getPath ()] = o;
+	}
+	return o;
+};
+
+async function createRsc (rsc, attrs) {
+	let data = await request ({
+		fn: "create",
+		rsc,
+		...attrs
+	});
+	let o = factory ({rsc, data});
+	
+	map [rsc][o.get ("id")] = o;
+	map [rsc][o.getPath ()] = o;
+	
+	return o;
+};
+
+async function removeRsc (rsc, id) {
+	await request ({
+		fn: "remove",
+		rsc,
+		id
+	});
+	delete map [rsc][id];
+	
+	let o = map [rsc][id];
+	
+	if (o) {
+		delete map [rsc][o.getPath ()];
+	}
+};
+
 class _Rsc {
 	constructor ({rsc, row, data}) {
 		let me = this;
@@ -144,12 +190,28 @@ class _Object extends _Rsc {
 		opts.rsc = "object";
 		super (opts);
 	}
+
+	getName () {
+		if (this.get ("name")) {
+			return `${this.get ("name")} (${this.get ("id")})`;
+		} else {
+			return this.get ("id");
+		}
+	}
 };
 
 class _Class extends _Rsc {
 	constructor (opts) {
 		opts.rsc = "class";
 		super (opts);
+	}
+
+	getTable () {
+		return `${this.get ("code")}_${this.get ("id")}`;
+	}
+	
+	getName () {
+		return `${this.get ("name")} (${this.getPath ()}: ${this.get ("id")})`;
 	}
 };
 
@@ -158,6 +220,35 @@ class _ClassAttr extends _Rsc {
 		opts.rsc = "classAttr";
 		super (opts);
 	}
+	
+	getPath () {
+		let me = this;
+		
+		return `${map ["class"][me.get ("class")].getPath ()}.${me.get ("code")}`;
+	}
+	
+	getField () {
+		return `${this.get ("code")}_${this.get ("id")}`;
+	}
+	
+	getLogField () {
+		let f = "fnumber";
+		
+		switch (this.get ("type")) {
+			case 1:
+			case 5:
+				f = "fstring";
+				break;
+			case 3:
+				f = "ftime";
+				break;
+		}
+		return f;
+	}
+	
+	getName () {
+		return `${this.get ("name")} (${this.get ("code")}: ${this.get ("id")})`;
+	}
 };
 
 class _View extends _Rsc {
@@ -165,12 +256,20 @@ class _View extends _Rsc {
 		opts.rsc = "view";
 		super (opts);
 	}
+
+	getName () {
+		return `${this.get ("name")} (${this.getPath ()}: ${this.get ("id")})`;
+	}
 };
 
 class _ViewAttr extends _Rsc {
 	constructor (opts) {
 		opts.rsc = "viewAttr";
 		super (opts);
+	}
+
+	getName () {
+		return `${this.get ("name")} (${this.get ("code")}: ${this.get ("id")})`;
 	}
 };
 
@@ -198,52 +297,6 @@ function factory (opts) {
 			throw new Error (`factory: unknown resource: ${rsc}`);
 	}
 	return o;
-};
-
-async function getRsc (rsc, id) {
-	let o = map [rsc][id];
-	
-	if (!o) {
-		let data = await request ({
-			fn: "get",
-			rsc,
-			id
-		});
-		o = factory ({rsc, data});
-
-		map [rsc][o.get ("id")] = o;
-		map [rsc][o.getPath ()] = o;
-	}
-	return o;
-};
-
-async function createRsc (rsc, attrs) {
-	let data = await request ({
-		fn: "create",
-		rsc,
-		...attrs
-	});
-	let o = factory ({rsc, data});
-	
-	map [rsc][o.get ("id")] = o;
-	map [rsc][o.getPath ()] = o;
-	
-	return o;
-};
-
-async function removeRsc (rsc, id) {
-	await request ({
-		fn: "remove",
-		rsc,
-		id
-	});
-	delete map [rsc][id];
-	
-	let o = map [rsc][id];
-	
-	if (o) {
-		delete map [rsc][o.getPath ()];
-	}
 };
 
 module.exports = {
