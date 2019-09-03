@@ -63,35 +63,37 @@ function updateDates (data) {
 	}
 };
 
-async function clientRequest (json) {
-	if (!url) {
-		throw new Error ("url not exists");
-	}
-	let res = await fetch (`${url}${sid ? `?sid=${sid}` : ``}`, {
-		headers: {
-			"Content-Type": "application/json; charset=utf-8"
-		},
-		method: "POST",
-		body: JSON.stringify (json)
+function clientRequest (json) {
+	return new Promise ((resolve, reject) => {
+		if (! url) {
+			return reject (new Error ("url not exists"));
+		}
+		fetch (`${url}${sid ? `?sid=${sid}` : ``}`, {
+			headers: {
+				"Content-Type": "application/json; charset=utf-8"
+			},
+			method: "POST",
+			body: JSON.stringify (json)
+		}).then (res => {
+			res.json ().then (data => {
+				if (data.error) {
+					console.error (data);
+					reject (new Error (data.error));
+				}
+				updateDates (data);
+				
+				resolve (data);
+			}, err => reject (err));
+		}, err => reject (err));
 	});
-	let data = await res.json ();
-	
-	if (data.error) {
-		console.error (data);
-		throw new Error (data.error);
-	}
-	updateDates (data);
-	
-	return data;
 };
 
-async function serverRequest (json) {
-	if (!url) {
-		throw new Error ("url not exists");
-	}
-	let data = JSON.stringify (json);
-	
+function serverRequest (json) {
 	return new Promise ((resolve, reject) => {
+		if (! url) {
+			return reject (new Error ("url not exists"));
+		}
+		let data = JSON.stringify (json);
 		let resData, reqErr;
 		let req = http.request ({
 			host,
@@ -114,7 +116,7 @@ async function serverRequest (json) {
 				}
 			});
 			res.on ("end", function () {
-				if (!reqErr) {
+				if (! reqErr) {
 					try {
 						resData = JSON.parse (resData);
 						

@@ -3,140 +3,179 @@
 const {map, rscAttrs, factory, getRsc, createRsc, removeRsc, parseRecDates} = require ("./model");
 const {setSessionId, getSessionId, setUrl, getUrl, request} = require ("./request");
 
-async function load () {
-	let data = await request ({
-		"fn": "getAll"
-	});
-	Object.keys (rscAttrs).forEach (rsc => {
-		data [rsc].forEach (row => {
-			let o = factory ({rsc, row});
-			
-			if (rsc == "class" || rsc == "view") {
-				o.attrs = {};
-			}
-			map [rsc][o.get ("id")] = o;
-		});
-		if (rsc == "class" || rsc == "view") {
-			Object.keys (map [rsc]).forEach (id => {
-				let o = map [rsc][id];
-
-				map [rsc][o.getPath ()] = o;
+function load () {
+	return new Promise ((resolve, reject) => {
+		request ({
+			"fn": "getAll"
+		}).then (data => {
+			Object.keys (rscAttrs).forEach (rsc => {
+				data [rsc].forEach (row => {
+					let o = factory ({rsc, row});
+					
+					if (rsc == "class" || rsc == "view") {
+						o.attrs = {};
+					}
+					map [rsc][o.get ("id")] = o;
+				});
+				if (rsc == "class" || rsc == "view") {
+					Object.keys (map [rsc]).forEach (id => {
+						let o = map [rsc][id];
+						
+						map [rsc][o.getPath ()] = o;
+					});
+				}
+				if (rsc == "classAttr") {
+					Object.keys (map ["classAttr"]).forEach (id => {
+						let o = map ["classAttr"][id];
+						let oo = map ["class"][o.get ("class")];
+						
+						oo.attrs [o.get ("code")] = o;
+						map ["classAttr"][oo.getPath () + "." + o.get ("code")] = o;
+					});
+				}
+				if (rsc == "viewAttr") {
+					Object.keys (map ["viewAttr"]).forEach (id => {
+						let o = map ["viewAttr"][id];
+						let oo = map ["view"][o.get ("view")];
+						
+						oo.attrs [o.get ("code")] = o;
+						map ["viewAttr"][oo.getPath () + "." + o.get ("code")] = o;
+					});
+				}
 			});
-		}
-		if (rsc == "classAttr") {
-			Object.keys (map ["classAttr"]).forEach (id => {
-				let o = map ["classAttr"][id];
-				let oo = map ["class"][o.get ("class")];
-				
-				oo.attrs [o.get ("code")] = o;
-				map ["classAttr"][oo.getPath () + "." + o.get ("code")] = o;
-			});
-		}
-		if (rsc == "viewAttr") {
-			Object.keys (map ["viewAttr"]).forEach (id => {
-				let o = map ["viewAttr"][id];
-				let oo = map ["view"][o.get ("view")];
-				
-				oo.attrs [o.get ("code")] = o;
-				map ["viewAttr"][oo.getPath () + "." + o.get ("code")] = o;
-			});
-		}
+			resolve ();
+		}, err => reject (err));
 	});
 };
 
 let informerId, revision = 0;
 
-async function informer () {
-	let data = await request ({
-		"fn": "getNews",
-		revision
-	});
-	revision = data.revision;
-	data.objects.forEach (id => delete map ["object"][id]);
-	
-	informerId = setTimeout (informer, 5000);
-};
-
-async function auth ({url, username, password}) {
-	if (url) {
-		setUrl (url);
-	}
-	let data = await request ({
-		"fn": "auth",
-		username,
-		password
-	});
-	
-	if (data.sessionId) {
-		setSessionId (data.sessionId);
-	}
-	await load ();
-	informer ();
-	
-	return data.sessionId;
-};
-
-async function startTransaction (description) {
-	await request ({
-		"fn": "startTransaction",
-		description
+function informer () {
+	return new Promise ((resolve, reject) => {
+		request ({
+			"fn": "getNews",
+			revision
+		}).then (data => {
+			revision = data.revision;
+			data.objects.forEach (id => delete map ["object"][id]);
+			
+			informerId = setTimeout (informer, 5000);
+			resolve ();
+		}, err => reject (err));
 	});
 };
 
-async function commitTransaction () {
-	await request ({
-		"fn": "commitTransaction"
+function auth ({url, username, password}) {
+	return new Promise ((resolve, reject) => {
+		if (url) {
+			setUrl (url);
+		}
+		request ({
+			"fn": "auth",
+			username,
+			password
+		}).then (data => {
+			if (data.sessionId) {
+				setSessionId (data.sessionId);
+			}
+			load ().then (() => {
+				informer ();
+				
+				resolve (data.sessionId);
+			}, err => reject (err));
+		}, err => reject (err));
 	});
 };
 
-async function rollbackTransaction () {
-	await request ({
-		"fn": "rollbackTransaction"
+function startTransaction (description) {
+	return new Promise ((resolve, reject) => {
+		request ({
+			"fn": "startTransaction",
+			description
+		}).then (() => resolve (), err => reject (err));
 	});
 };
 
-async function getObject (id) {
-	return await getRsc ("object", id);
+function commitTransaction () {
+	return new Promise ((resolve, reject) => {
+		request ({
+			"fn": "commitTransaction"
+		}).then (() => resolve (), err => reject (err));
+	});
 };
 
-async function createObject (attrs) {
-	return await createRsc ("object", attrs);
+function rollbackTransaction () {
+	return new Promise ((resolve, reject) => {
+		request ({
+			"fn": "rollbackTransaction"
+		}).then (() => resolve (), err => reject (err));
+	});
 };
 
-async function removeObject (id) {
-	return await removeRsc ("object", id);
+function getObject (id) {
+	return new Promise ((resolve, reject) => {
+		getRsc ("object", id).then ((rsc) => resolve (rsc), err => reject (err));
+	});
 };
 
-async function createClass (attrs) {
-	return await createRsc ("class", attrs);
+function createObject (attrs) {
+	return new Promise ((resolve, reject) => {
+		createRsc ("object", attrs).then ((rsc) => resolve (rsc), err => reject (err));
+	});
 };
 
-async function removeClass (id) {
-	return await removeRsc ("class", id);
+function removeObject (id) {
+	return new Promise ((resolve, reject) => {
+		removeRsc ("object", id).then ((rsc) => resolve (rsc), err => reject (err));
+	});
 };
 
-async function createView (attrs) {
-	return await createRsc ("view", attrs);
+function createClass (attrs) {
+	return new Promise ((resolve, reject) => {
+		createRsc ("class", attrs).then ((rsc) => resolve (rsc), err => reject (err));
+	});
 };
 
-async function removeView (id) {
-	return await removeRsc ("view", id);
+function removeClass (id) {
+	return new Promise ((resolve, reject) => {
+		removeRsc ("class", id).then ((rsc) => resolve (rsc), err => reject (err));
+	});
 };
 
-async function createClassAttr (attrs) {
-	return await createRsc ("classAttr", attrs);
+function createView (attrs) {
+	return new Promise ((resolve, reject) => {
+		createRsc ("view", attrs).then ((rsc) => resolve (rsc), err => reject (err));
+	});
 };
 
-async function removeClassAttr (id) {
-	return await removeRsc ("classAttr", id);
+function removeView (id) {
+	return new Promise ((resolve, reject) => {
+		removeRsc ("view", id).then ((rsc) => resolve (rsc), err => reject (err));
+	});
 };
 
-async function createViewAttr (attrs) {
-	return await createRsc ("viewAttr", attrs);
+function createClassAttr (attrs) {
+	return new Promise ((resolve, reject) => {
+		createRsc ("classAttr", attrs).then ((rsc) => resolve (rsc), err => reject (err));
+	});
 };
 
-async function removeViewAttr (id) {
-	return await removeRsc ("viewAttr", id);
+function removeClassAttr (id) {
+	return new Promise ((resolve, reject) => {
+		removeRsc ("classAttr", id).then ((rsc) => resolve (rsc), err => reject (err));
+	});
+};
+
+function createViewAttr (attrs) {
+	return new Promise ((resolve, reject) => {
+		createRsc ("viewAttr", attrs).then ((rsc) => resolve (rsc), err => reject (err));
+	});
+};
+
+function removeViewAttr (id) {
+	return new Promise ((resolve, reject) => {
+		removeRsc ("viewAttr", id).then ((rsc) => resolve (rsc), err => reject (err));
+	});
 };
 
 function getClass (id) {
@@ -149,16 +188,6 @@ function getClass (id) {
 	}
 };
 
-function getView (id) {
-	let o = map ["view"][id];
-	
-	if (o) {
-		return o;
-	} else {
-		throw new Error (`unknown view: ${id}`);
-	}
-};
-
 function getClassAttr (id) {
 	let o = map ["classAttr"][id];
 	
@@ -166,6 +195,16 @@ function getClassAttr (id) {
 		return o;
 	} else {
 		throw new Error (`unknown class attr: ${id}`);
+	}
+};
+
+function getView (id) {
+	let o = map ["view"][id];
+	
+	if (o) {
+		return o;
+	} else {
+		throw new Error (`unknown view: ${id}`);
 	}
 };
 
@@ -188,28 +227,33 @@ async function execute (sql) {
 };
 */
 
-async function getData (opts) {
-	let result = await request ({
-		"fn": "getData",
-		...opts
+function getData (opts) {
+	return new Promise ((resolve, reject) => {
+		request (Object.assign ({
+			"fn": "getData"
+		}, opts)).then (result => {
+			result.recs.forEach (rec => {
+				parseRecDates (rec);
+			});
+			resolve (result);
+		}, err => reject (err));
 	});
-	result.recs.forEach (rec => {
-		parseRecDates (rec);
-	});
-	return result;
 };
 
-async function getDict (id) {
-	if (map ["dict"][id]) {
-		return map ["dict"][id];
-	}
-	let recs = await request ({
-		"fn": "getDict",
-		"class": id
+function getDict (id) {
+	return new Promise ((resolve, reject) => {
+		if (map ["dict"][id]) {
+			return map ["dict"][id];
+		}
+		request ({
+			"fn": "getDict",
+			"class": id
+		}).then (recs => {
+			map ["dict"][id] = recs;
+			
+			resolve (recs);
+		}, err => reject (err));
 	});
-	map ["dict"][id] = recs;
-	
-	return recs;
 };
 
 module.exports = {

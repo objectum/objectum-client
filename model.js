@@ -43,50 +43,62 @@ function parseRecDates (rec) {
 	}
 };
 
-async function getRsc (rsc, id) {
-	let o = map [rsc][id];
-	
-	if (!o) {
-		let data = await request ({
-			fn: "get",
+function getRsc (rsc, id) {
+	return new Promise ((resolve, reject) => {
+		let o = map [rsc][id];
+		
+		if (o) {
+			resolve (o);
+		} else {
+			request ({
+				fn: "get",
+				rsc,
+				id
+			}).then (data => {
+				o = factory ({rsc, data});
+				
+				map [rsc][o.get ("id")] = o;
+				map [rsc][o.getPath ()] = o;
+				
+				resolve (o);
+			}, err => reject (err));
+		}
+	});
+};
+
+function createRsc (rsc, attrs) {
+	return new Promise ((resolve, reject) => {
+		request (Object.assign ({
+			fn: "create",
+			rsc
+		}, attrs)).then (data => {
+			let o = factory ({rsc, data});
+			
+			map [rsc][o.get ("id")] = o;
+			map [rsc][o.getPath ()] = o;
+			
+			resolve (o);
+		}, err => reject (err));
+	});
+};
+
+function removeRsc (rsc, id) {
+	return new Promise ((resolve, reject) => {
+		request ({
+			fn: "remove",
 			rsc,
 			id
-		});
-		o = factory ({rsc, data});
-		
-		map [rsc][o.get ("id")] = o;
-		map [rsc][o.getPath ()] = o;
-	}
-	return o;
-};
-
-async function createRsc (rsc, attrs) {
-	let data = await request ({
-		fn: "create",
-		rsc,
-		...attrs
+		}).then (() => {
+			delete map [rsc][id];
+			
+			let o = map [rsc][id];
+			
+			if (o) {
+				delete map [rsc][o.getPath ()];
+			}
+			resolve ();
+		}, err => reject (err));
 	});
-	let o = factory ({rsc, data});
-	
-	map [rsc][o.get ("id")] = o;
-	map [rsc][o.getPath ()] = o;
-	
-	return o;
-};
-
-async function removeRsc (rsc, id) {
-	await request ({
-		fn: "remove",
-		rsc,
-		id
-	});
-	delete map [rsc][id];
-	
-	let o = map [rsc][id];
-	
-	if (o) {
-		delete map [rsc][o.getPath ()];
-	}
 };
 
 class _Rsc {
@@ -139,33 +151,34 @@ class _Rsc {
 		this.removed = true;
 	}
 
-	async sync () {
-		let me = this;
-		
-		if (me.removed) {
-			return await removeRsc (me.rsc, me.get ("id"));
-		}
-		let attrs = {};
-		
-		for (let a in me.data) {
-			if (me.originalData [a] instanceof Date) {
-				me.originalData [a] = me.originalData [a].toISOString ();
+	sync () {
+		return new Promise ((resolve, reject) => {
+			let me = this;
+			
+			if (me.removed) {
+				return removeRsc (me.rsc, me.get ("id")).then (() => resolve (), err => reject (err));
 			}
-			if (me.data [a] instanceof Date) {
-				me.data [a] = me.data [a].toISOString ();
+			let attrs = {};
+			
+			for (let a in me.data) {
+				if (me.originalData [a] instanceof Date) {
+					me.originalData [a] = me.originalData [a].toISOString ();
+				}
+				if (me.data [a] instanceof Date) {
+					me.data [a] = me.data [a].toISOString ();
+				}
+				if (! me.originalData.hasOwnProperty (a) || me.originalData [a] != me.data [a]) {
+					attrs [a] = me.data [a];
+				}
 			}
-			if (!me.originalData.hasOwnProperty (a) || me.originalData [a] != me.data [a]) {
-				attrs [a] = me.data [a];
+			if (Object.keys (attrs).length) {
+				request (Object.assign ({
+					fn: "set",
+					rsc: me.rsc,
+					id: me.get ("id")
+				}, attrs)).then (() => resolve (), err => reject (err));
 			}
-		}
-		if (Object.keys (attrs).length) {
-			await request ({
-				fn: "set",
-				rsc: me.rsc,
-				id: me.get ("id"),
-				...attrs
-			});
-		}
+		});
 	}
 
 	getPath (o, path = []) {
