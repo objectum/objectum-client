@@ -3,3 +3,5 @@
 /npm-debug.log*
 /*.sh
 /*.old
+/tests
+/webpack.config.js
