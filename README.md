@@ -8,7 +8,7 @@ Isomorhic javascript client for objectum platform https://github.com/objectum/ob
 npm i objectum-client
 ```
 
-
+## API
 * [Initialization](#init)  
 * [Authentication](#auth)  
 * [Transactions](#transactions)
@@ -19,6 +19,33 @@ npm i objectum-client
     * [Create class](#createClass)
     * [Get class](#getClass)
     * [Remove class](#removeClass)
+* [Class attributes](#classAttrs)
+    * [Create class attribute](#createClassAttre)
+    * [Get class attribute](#getClassAttr)
+    * [Remove class attribute](#removeClassAttr)
+* [Objects](#objects)
+    * [Create object](#createObject)
+    * [Get object](#getObject)
+    * [Remove object](#removeObject)
+* [Views](#views)
+    * [Create view](#createView)
+    * [Get view](#getView)
+    * [Remove view](#removeView)
+* [View attributes](#viewAttrs)
+    * [Create view attribute](#createViewAttr)
+    * [Get view attribute](#getViewAttr)
+    * [Remove view attribute](#removeViewAttr)
+* [Get data](#getData)
+* [Get dictionary](#getDict)
+* [Resources](#resources)
+    * [Create resource](#createRsc)
+    * [Get resource](#getRsc)
+    * [Remove resource](#removeRsc)
+* [Set session id](#setSessionId)
+* [Get session id](#getSessionId)
+* [Set url](#setUrl)
+* [Get url](#getUrl)
+
 
 <a name="init" />
 
@@ -33,11 +60,10 @@ store.setUrl ("http://127.0.0.1:8200/api/projects/catalog/");
 
 ## Authentication
 Auth with username "admin", password "admin.
-#### Javascript:
 ```js
 let sid = await store.auth ({
-    username: "admin",
-    password: require ("crypto").createHash ("sha1").update ("admin").digest ("hex").toUpperCase ()
+    "username": "admin",
+    "password": require ("crypto").createHash ("sha1").update ("admin").digest ("hex").toUpperCase ()
 });
 ```
 #### JSON request:
@@ -62,10 +88,9 @@ let sid = await store.auth ({
 
 ## Transactions
 
-<a name="startTtransaction" />
+<a name="startTransaction" />
 
 ### Start transaction
-#### Javascript:
 ```js
 await store.startTransaction ("My description");
 ```
@@ -86,7 +111,6 @@ await store.startTransaction ("My description");
 <a name="commitTransaction" />
 
 ### Commit transaction
-#### Javascript:
 ```js
 await store.commitTransaction ();
 ```
@@ -131,8 +155,8 @@ await store.rollbackTransaction ();
 ### Create class
 ```js
 await store.createClass ({
-    name: "Item",
-    code: "item"
+    "name": "Item",
+    "code": "item"
 });
 ```
 #### JSON request:
@@ -150,8 +174,7 @@ await store.createClass ({
     "id": 1006,
     "name": "Item",
     "code": "item",
-    "start": 1006,
-    "end": 0
+    "start": 1006
 }
 ```
 
@@ -181,10 +204,7 @@ let o = await store.getClass ("item");
     "format": null,
     "view": null,
     "opts": null,
-    "start": 1006,
-    "end": 0,
-    "schema": null,
-    "record": null
+    "start": 1006
 }
 ```
 
@@ -208,55 +228,315 @@ await store.removeClass ("item");
     "id": 1006
 }
 ```
+
+<a name="classAttrs" />
+
 ## Class attributes
 
-### createClassAttr
+<a name="createClassAttr" />
 
-### getClassAttr
+### Create class attribute
+```js
+await store.createClassAttr ({
+    "class": "item",
+    "type": "string",
+    "name": "Name",
+    "code": "name"
+});
+```
+#### JSON request:
+```json
+{
+    "fn": "create",
+    "rsc": "classAttr",
+    "class": "item",
+    "type": "string",
+    "name": "Name",
+    "code": "name"
+}
+```
+#### JSON response:
+```json
+{
+    "id": 1013,
+    "class": 1006,
+    "name": "Name",
+    "code": "name",
+    "type": 1,
+    "start": 1011
+}
+```
 
-### removeClassAttr
+<a name="getClassAttr" />
+
+### Get class attribute
+```js
+await store.getClassAttr ("item.name");
+```
+#### JSON request:
+```json
+{
+    "fn": "get",
+    "rsc": "classAttr",
+    "id": "item.name"
+}
+```
+#### JSON response:
+```json
+{
+    "id": 1013,
+    "class": 1006,
+    "name": "Name",
+    "code": "name",
+    "description": null,
+    "order": null,
+    "type": 1,
+    "notNull": null,
+    "secure": null,
+    "unique": null,
+    "validFunc": null,
+    "removeRule": null,
+    "opts": null,
+    "start": 1011
+}
+```
+
+<a name="removeClassAttr" />
+
+### Remove class attribute
+```js
+await store.removeClassAttr ("item.name");
+```
+#### JSON request:
+```json
+{
+    "fn": "remove",
+    "rsc": "classAttr",
+    "id": "item.name"
+}
+```
+#### JSON response:
+```json
+{
+    "id": 1013
+}
+```
+
+<a name="objects" />
 
 ## Objects
 
-### createObject
+<a name="createObject" />
 
-### getObject
+### Create object
+```js
+let o = await store.createObject ({
+    "class": "item",
+    "name": "Table"
+});
+```
+#### JSON request:
+```json
+{
+    "fn": "create",
+    "rsc": "object",
+    "class": "item",
+    "name": "Table"
+}
+```
+#### JSON response:
+```json
+{
+    "id": 1005,
+    "class": 1006,
+    "start": 1012
+    "name": "Table"
+}
+```
 
-### removeObject
+<a name="getObject" />
 
-### createView
+### Get object
+```js
+let o = await store.getObject (1005);
+```
+#### JSON request:
+```json
+{
+    "fn": "get",
+    "rsc": "object",
+    "id": 1005
+}
+```
+#### JSON response:
+```json
+{
+    "id": 1005,
+    "class": 1006,
+    "name": "Table"
+}
+```
+
+<a name="removeObject" />
+
+### Remove object
+```js
+await store.removeObject (1005);
+```
+#### JSON request:
+```json
+{
+    "fn": "remove",
+    "rsc": "object",
+    "id": 1005
+}
+```
+#### JSON response:
+```json
+{
+    "id": 1005
+}
+```
+
+<a name="views" />
 
 ## Views
 
-### getView
+<a name="createView" />
 
-### removeView
+### Create view
+```js
+let o = await store.createView ({
+    "name": "Item",
+    "code": "item"
+});
+```
+#### JSON request:
+```json
+{
+    "fn": "create",
+    "rsc": "view",
+    "name": "Item",
+    "code": "item"
+}
+```
+#### JSON response:
+```json
+{
+    "id": 1009,
+    "name": "Item",
+    "code": "item",
+    "start": 1014
+}
+```
+
+<a name="getView" />
+
+### Get view
+```js
+let o = await store.getView ("item");
+```
+#### JSON request:
+```json
+{
+    "fn": "get",
+    "rsc": "view",
+    "id": "item"
+}
+```
+#### JSON response:
+```json
+{
+    "id": 1009,
+    "parent": null,
+    "name": "Item",
+    "code": "item",
+    "description": null,
+    "order": null,
+    "query": null,
+    "layout": null,
+    "iconCls": null,
+    "system": null,
+    "class": null,
+    "opts": null,
+    "start": 1014
+}
+```
+
+<a name="removeView" />
+
+### Remove view
+```js
+await store.removeView ("item");
+```
+#### JSON request:
+```json
+{
+    "fn": "remove",
+    "rsc": "view",
+    "id": "item"
+}
+```
+#### JSON response:
+```json
+{
+    "id": 1009
+}
+```
+
+<a name="viewAttrs" />
 
 ## View attributes
 
-### createViewAttr
+<a name="createViewAttr" />
 
-### getViewAttr
+### Create view attribute
 
-### removeViewAttr
+<a name="getViewAttr" />
 
-## getData
+### Get view attribute
 
-## getDict
+<a name="removeViewAttr" />
+
+### Remove view attribute
+
+<a name="getData" />
+
+## Get data
+
+<a name="getDict" />
+
+## Get dictionary
+
+<a name="resources" />
 
 ## Resources
 
-### getRsc
+<a name="createRsc" />
 
-### createRsc
+### Create resource
 
-### removeRsc
+<a name="getRsc" />
 
-## setSessionId
+### Get resource
 
-## getSessionId
+<a name="removeRsc" />
 
-## setUrl
+### Remove resource
 
-## getUrl
+<a name="setSessionId" />
+
+## Set session id
+
+<a name="getSessionId" />
+
+## Get session id
+
+<a name="setUrl" />
+
+## Set url
+
+<a name="getUrl" />
+
+## Get url
 
