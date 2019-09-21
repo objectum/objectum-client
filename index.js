@@ -65,6 +65,10 @@ function informer () {
 	});
 };
 
+function end () {
+	clearTimeout (informerId);
+};
+
 function auth ({url, username, password}) {
 	return new Promise ((resolve, reject) => {
 		if (url) {
@@ -286,5 +290,6 @@ module.exports = {
 	setSessionId,
 	getSessionId,
 	setUrl,
-	getUrl
+	getUrl,
+	end
 };

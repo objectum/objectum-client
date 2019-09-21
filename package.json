@@ -15,5 +15,8 @@
 	"bugs": {
 		"url": "https://github.com/objectum/objectum-client/issues"
 	},
-	"homepage": "https://github.com/objectum/objectum-client#readme"
+	"homepage": "https://github.com/objectum/objectum-client#readme",
+	"dependencies": {
+		"why-is-node-running": "^2.1.0"
+	}
 }

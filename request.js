@@ -102,8 +102,8 @@ function serverRequest (json) {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json; charset=utf-8",
-				"Content-Length": Buffer.byteLength (data, "utf8"),
-				"Connection": "Keep-Alive"
+				"Content-Length": Buffer.byteLength (data, "utf8")//,
+//				"Connection": "Keep-Alive"
 			}
 		}, function (res) {
 			res.setEncoding ("utf8");
@@ -126,6 +126,10 @@ function serverRequest (json) {
 						} else {
 							updateDates (resData);
 							
+							if (process.env.OBJECTUM_DEBUG && json.fn != "getAll") {
+								console.log ("request:", JSON.stringify (json, null, "\t"));
+								console.log ("response:", JSON.stringify (resData, null, "\t"));
+							}
 							resolve (resData);
 						}
 					} catch (err) {
