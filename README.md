@@ -7,12 +7,30 @@ Isomorhic javascript client for objectum platform https://github.com/objectum/ob
 ```bash
 npm i objectum-client
 ```
+
+
+* [Initialization](#init)  
+* [Authentication](#auth)  
+* [Transactions](#transactions)
+    * [Start transaction](#startTransaction)
+    * [Commit transaction](#commitTransaction)
+    * [Rollback transaction](#rollbackTransaction)
+* [Classes](#classes)
+    * [Create class](#createClass)
+    * [Get class](#getClass)
+    * [Remove class](#removeClass)
+
+<a name="init" />
+
 ## Initialization
 ```js
 const store = require ("objectum-client");
 
 store.setUrl ("http://127.0.0.1:8200/api/projects/catalog/");
 ```
+
+<a name="auth" />
+
 ## Authentication
 Auth with username "admin", password "admin.
 #### Javascript:
@@ -40,7 +58,12 @@ let sid = await store.auth ({
 }
 ```
 
+<a name="transactions" />
+
 ## Transactions
+
+<a name="startTtransaction" />
+
 ### Start transaction
 #### Javascript:
 ```js
@@ -56,9 +79,12 @@ await store.startTransaction ("My description");
 #### JSON response:
 ```json
 {
-	"revision": 1000
+    "revision": 1000
 }
 ```
+
+<a name="commitTransaction" />
+
 ### Commit transaction
 #### Javascript:
 ```js
@@ -73,9 +99,12 @@ await store.commitTransaction ();
 #### JSON response:
 ```json
 {
-	"revision": 1000
+    "revision": 1000
 }
 ```
+
+<a name="rollbackTransaction" />
+
 ### Rollback transaction
 ```js
 await store.rollbackTransaction ();
@@ -89,11 +118,17 @@ await store.rollbackTransaction ();
 #### JSON response:
 ```json
 {
-	"revision": 1000
+    "revision": 1000
 }
 ```
+
+<a name="classes" />
+
 ## Classes
-### createClass
+
+<a name="createClass" />
+
+### Create class
 ```js
 await store.createClass ({
     name: "Item",
@@ -112,59 +147,65 @@ await store.createClass ({
 #### JSON response:
 ```json
 {
-	"id": 1006,
-	"name": "Item",
-	"code": "item",
-	"start": 1006,
-	"end": 0
+    "id": 1006,
+    "name": "Item",
+    "code": "item",
+    "start": 1006,
+    "end": 0
 }
 ```
-### getClass
+
+<a name="getClass" />
+
+### Get class
 ```js
 let o = await store.getClass ("item");
 ```
 #### JSON request:
 ```json
 {
-	"fn": "get",
-	"rsc": "class",
-	"id": "item"
+    "fn": "get",
+    "rsc": "class",
+    "id": "item"
 }
 ```
 #### JSON response:
 ```json
 {
-	"id": 1006,
-	"parent": null,
-	"name": "Item",
-	"code": "item",
-	"description": null,
-	"order": null,
-	"format": null,
-	"view": null,
-	"opts": null,
-	"start": 1006,
-	"end": 0,
-	"schema": null,
-	"record": null
+    "id": 1006,
+    "parent": null,
+    "name": "Item",
+    "code": "item",
+    "description": null,
+    "order": null,
+    "format": null,
+    "view": null,
+    "opts": null,
+    "start": 1006,
+    "end": 0,
+    "schema": null,
+    "record": null
 }
 ```
-### removeClass
+
+<a name="removeClass" />
+
+### Remove class
 ```js
 await store.removeClass ("item");
 ```
 #### JSON request:
 ```json
 {
-	"fn": "remove",
-	"rsc": "class",
-	"id": "item"
+    "fn": "remove",
+    "rsc": "class",
+    "id": "item"
 }
 ```
 #### JSON response:
 ```json
 {
-	"id": 1006
+    "id": 1006
 }
 ```
 ## Class attributes
