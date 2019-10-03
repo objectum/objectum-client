@@ -611,7 +611,6 @@ from
 limit {config.query.maxCount}
 offset 0
 ```
-```
 #### JSON request:
 ```json
 {
