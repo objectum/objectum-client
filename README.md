@@ -1,5 +1,3 @@
-Under construction.
-
 # Objectum client
 Isomorhic javascript client for objectum platform https://github.com/objectum/objectum 
 
@@ -59,7 +57,7 @@ store.setUrl ("http://127.0.0.1:8200/api/projects/catalog/");
 <a name="auth" />
 
 ## Authentication
-Auth with username "admin", password "admin.
+Auth with username "admin", password "admin".
 ```js
 let sid = await store.auth ({
     "username": "admin",
@@ -491,52 +489,249 @@ await store.removeView ("item");
 <a name="createViewAttr" />
 
 ### Create view attribute
+```js
+let o = await store.createViewAttr ({
+    "view": "item",
+    "name": "Name",
+    "code": "name"
+});
+```
+#### JSON request:
+```json
+{
+    "fn": "create",
+    "rsc": "viewAttr",
+    "view": "item",
+    "name": "Name",
+    "code": "name"
+}
+```
+#### JSON response:
+```json
+{
+    "id": 1011,
+    "view": 1009,
+    "name": "Name",
+    "code": "name",
+    "start": 1014
+}
+```
 
 <a name="getViewAttr" />
 
 ### Get view attribute
+```js
+let o = await store.getViewAttr ("item.name");
+```
+#### JSON request:
+```json
+{
+    "fn": "get",
+    "rsc": "viewAttr",
+    "id": "item.name"
+}
+```
+#### JSON response:
+```json
+{
+    "id": 1011,
+    "view": 1009,
+    "name": "Name",
+    "code": "name",
+    "start": 1014
+}
+```
 
 <a name="removeViewAttr" />
 
 ### Remove view attribute
+```js
+await store.removeViewAttr ("item.name");
+```
+#### JSON request:
+```json
+{
+    "fn": "remove",
+    "rsc": "viewAttr",
+    "id": "item.name"
+}
+```
+#### JSON response:
+```json
+{
+    "id": 1011
+}
+```
 
 <a name="getData" />
 
 ## Get data
+Get data using query (SQL) from view.
+```js
+let data = await store.getData ({
+    view: "item",
+    offset: 0,
+    limit: 20
+});
+```
+SQL example:
+```sql
+{"data": "begin"}
+select
+    {"attr": "a.id", "as": "id"},
+    {"attr": "a.name", "as": "name"}
+{"data": "end"}
+
+{"count": "begin"}
+select
+    count (*) as num
+{"count": "end"}
+
+from
+    {"class": "item", "alias": "a"}
+limit {"param": "limit"}
+offset {"param": "offset"}
+```
+Select SQL:
+```sql
+select
+    {"attr": "a.id", "as": "id"},
+    {"attr": "a.name", "as": "name"}
+from
+    {"class": "item", "alias": "a"}
+limit 20
+offset 0
+```
+Count SQL:
+```sql
+select
+    count (*) as num
+from
+    {"class": "item", "alias": "a"}
+limit {config.query.maxCount}
+offset 0
+```
+```
+#### JSON request:
+```json
+{
+    "fn": "getData",
+    "view": "item",
+    "offset": 0,
+    "limit": 20
+}
+```
+#### JSON response:
+```json
+{
+    "cols": [
+        {
+            "class": 1006,
+            "classAttr": null,
+            "code": "id",
+            "name": "id",
+            "order": 1,
+            "type": 1
+        },
+        {
+            "class": 1006,
+            "classAttr": 1013,
+            "code": "name",
+            "name": "Name",
+            "order": 2,
+            "type": 1
+        }
+    ],
+    "length": 1,
+    "recs": [
+        {
+            "id": 1005,
+            "name": "Table"
+        }
+    ]
+}
+```
 
 <a name="getDict" />
 
 ## Get dictionary
+```js
+let recs = await store.getDict ("d.item.type");
+```
+#### JSON request:
+```json
+{
+    "fn": "getDict",
+    "class": "d.item.type"
+}
+```
+#### JSON response:
+```json
+[
+    {
+        "id": 1100,
+        "name": "Furniture"
+    },
+    {
+        "id": 1101,
+        "name": "Tool"
+    }
+]
+```
 
 <a name="resources" />
 
 ## Resources
+Common methods for all resources: class, classAttr, view, viewAttr, object.
 
 <a name="createRsc" />
 
 ### Create resource
+```js
+let o = await store.createRsc ("object", {
+    "class": "item",
+    "name": "Table"
+});
+```
 
 <a name="getRsc" />
 
 ### Get resource
+```js
+let o = await store.getRsc ("object", 1005);
+```
 
 <a name="removeRsc" />
 
 ### Remove resource
+```js
+await store.removeRsc ("object", 1005);
+```
 
 <a name="setSessionId" />
 
 ## Set session id
+```js
+store.setSessionId (sid);
+```
 
 <a name="getSessionId" />
 
 ## Get session id
+```js
+let sid = store.getSessionId ();
+```
 
 <a name="setUrl" />
 
 ## Set url
+```js
+store.setUrl ("/api/projects/catalog/");
+```
 
 <a name="getUrl" />
 
 ## Get url
-
+```js
+let url = store.getUrl ();
+```
