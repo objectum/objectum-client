@@ -735,3 +735,14 @@ store.setUrl ("/api/projects/catalog/");
 ```js
 let url = store.getUrl ();
 ```
+
+## Author
+
+**Dmitriy Samortsev**
+
++ http://github.com/objectum
+
+
+## Copyright and license
+
+MIT
