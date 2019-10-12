@@ -196,6 +196,10 @@ class _Rsc {
 			return path.join (".");
 		}
 	}
+
+	getName () {
+		return `${this.get ("name")} (${this.getPath ()}: ${this.get ("id")})`;
+	}
 };
 
 class _Object extends _Rsc {
@@ -221,10 +225,6 @@ class _Class extends _Rsc {
 
 	getTable () {
 		return `${this.get ("code")}_${this.get ("id")}`;
-	}
-	
-	getName () {
-		return `${this.get ("name")} (${this.getPath ()}: ${this.get ("id")})`;
 	}
 };
 
@@ -269,10 +269,6 @@ class _View extends _Rsc {
 		opts.rsc = "view";
 		super (opts);
 	}
-
-	getName () {
-		return `${this.get ("name")} (${this.getPath ()}: ${this.get ("id")})`;
-	}
 };
 
 class _ViewAttr extends _Rsc {
@@ -280,7 +276,13 @@ class _ViewAttr extends _Rsc {
 		opts.rsc = "viewAttr";
 		super (opts);
 	}
-
+	
+	getPath () {
+		let me = this;
+		
+		return `${map ["view"][me.get ("view")].getPath ()}.${me.get ("code")}`;
+	}
+	
 	getName () {
 		return `${this.get ("name")} (${this.get ("code")}: ${this.get ("id")})`;
 	}
