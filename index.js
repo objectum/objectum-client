@@ -85,7 +85,7 @@ function auth ({url, username, password}) {
 			load ().then (() => {
 				informer ();
 				
-				resolve (data.sessionId);
+				resolve (data.sessionId, data.userId, data.roleId, data.menuId);
 			}, err => reject (err));
 		}, err => reject (err));
 	});
