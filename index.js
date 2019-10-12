@@ -2,6 +2,7 @@
 
 const {map, rscAttrs, factory, getRsc, createRsc, removeRsc, parseRecDates} = require ("./model");
 const {setSessionId, getSessionId, setUrl, getUrl, request} = require ("./request");
+let userId = null, roleId = null, menuId = null;
 
 function load () {
 	return new Promise ((resolve, reject) => {
@@ -84,6 +85,10 @@ function auth ({url, username, password}) {
 			}
 			load ().then (() => {
 				informer ();
+				
+				userId = data.userId;
+				roleId = data.roleId;
+				menuId = data.menuId;
 				
 				resolve (data.sessionId, data.userId, data.roleId, data.menuId);
 			}, err => reject (err));
@@ -260,6 +265,18 @@ function getDict (id) {
 	});
 };
 
+function getUserId () {
+	return userId;
+};
+
+function getRoleId () {
+	return userId;
+};
+
+function getMenuId () {
+	return userId;
+};
+
 module.exports = {
 	auth,
 	startTransaction,
@@ -291,5 +308,8 @@ module.exports = {
 	getSessionId,
 	setUrl,
 	getUrl,
+	getUserId,
+	getRoleId,
+	getMenuId,
 	end
 };
