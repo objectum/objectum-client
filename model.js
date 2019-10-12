@@ -197,7 +197,7 @@ class _Rsc {
 		}
 	}
 
-	getName () {
+	getLabel () {
 		return `${this.get ("name")} (${this.getPath ()}: ${this.get ("id")})`;
 	}
 };
@@ -208,7 +208,7 @@ class _Object extends _Rsc {
 		super (opts);
 	}
 
-	getName () {
+	getLabel () {
 		if (this.get ("name")) {
 			return `${this.get ("name")} (${this.get ("id")})`;
 		} else {
@@ -259,7 +259,7 @@ class _ClassAttr extends _Rsc {
 		return f;
 	}
 	
-	getName () {
+	getLabel () {
 		return `${this.get ("name")} (${this.get ("code")}: ${this.get ("id")})`;
 	}
 };
@@ -283,7 +283,7 @@ class _ViewAttr extends _Rsc {
 		return `${map ["view"][me.get ("view")].getPath ()}.${me.get ("code")}`;
 	}
 	
-	getName () {
+	getLabel () {
 		return `${this.get ("name")} (${this.get ("code")}: ${this.get ("id")})`;
 	}
 };
