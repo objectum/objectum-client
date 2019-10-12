@@ -252,7 +252,7 @@ function getData (opts) {
 function getDict (id) {
 	return new Promise ((resolve, reject) => {
 		if (map ["dict"][id]) {
-			return map ["dict"][id];
+			resolve (map ["dict"][id]);
 		}
 		request ({
 			"fn": "getDict",
