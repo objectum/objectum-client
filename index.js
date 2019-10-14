@@ -270,11 +270,11 @@ function getUserId () {
 };
 
 function getRoleId () {
-	return userId;
+	return roleId;
 };
 
 function getMenuId () {
-	return userId;
+	return menuId;
 };
 
 module.exports = {
