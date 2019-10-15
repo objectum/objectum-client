@@ -4,6 +4,32 @@ const {map, rscAttrs, factory, getRsc, createRsc, removeRsc, parseRecDates} = re
 const {setSessionId, getSessionId, setUrl, getUrl, request} = require ("./request");
 let userId = null, roleId = null, menuId = null;
 
+let listeners = {};
+
+function addListener (event, fn) {
+	listeners [event] = listeners [event] || [];
+	listeners [event].push (fn);
+};
+
+function removeListener (event, fn) {
+	listeners [event] = listeners [event] || [];
+	
+	for (let i = 0; i < listeners [event].length; i ++) {
+		if (listeners [event][i] == fn) {
+			listeners [event].splice (i, 1);
+			break;
+		}
+	}
+};
+
+function callListeners (event, opts) {
+	listeners [event] = listeners [event] || [];
+	
+	for (let i = 0; i < listeners [event].length; i ++) {
+		listeners [event] (opts);
+	}
+};
+
 function load () {
 	return new Promise ((resolve, reject) => {
 		request ({
@@ -91,6 +117,7 @@ function auth ({url, username, password}) {
 				menuId = data.menuId;
 				
 				resolve (data.sessionId, data.userId, data.roleId, data.menuId);
+				callListeners ("connect", data);
 			}, err => reject (err));
 		}, err => reject (err));
 	});
@@ -311,5 +338,7 @@ module.exports = {
 	getUserId,
 	getRoleId,
 	getMenuId,
+	addListener,
+	removeListener,
 	end
 };
