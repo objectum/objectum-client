@@ -26,7 +26,7 @@ function callListeners (event, opts) {
 	listeners [event] = listeners [event] || [];
 	
 	for (let i = 0; i < listeners [event].length; i ++) {
-		listeners [event] (opts);
+		listeners [event][i] (opts);
 	}
 };
 
