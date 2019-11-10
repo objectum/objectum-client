@@ -326,6 +326,8 @@ async function execute (sql) {
 */
 
 function getData (opts) {
+	opts ["view"] = opts ["query"];
+	
 	return new Promise ((resolve, reject) => {
 		request (Object.assign ({
 			"fn": "getData"
