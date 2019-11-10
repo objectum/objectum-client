@@ -154,10 +154,20 @@ function getObject (id) {
 	});
 };
 
+function getRecord (id) {
+	return getObject (id);
+};
+
 function createObject (attrs) {
 	return new Promise ((resolve, reject) => {
 		createRsc ("object", attrs).then ((rsc) => resolve (rsc), err => reject (err));
 	});
+};
+
+function createRecord (attrs) {
+	attrs ["class"] = attrs ["model"];
+
+	return createObject (attrs);
 };
 
 function removeObject (id) {
@@ -166,10 +176,18 @@ function removeObject (id) {
 	});
 };
 
+function removeRecord (id) {
+	return removeObject (id);
+};
+
 function createClass (attrs) {
 	return new Promise ((resolve, reject) => {
 		createRsc ("class", attrs).then ((rsc) => resolve (rsc), err => reject (err));
 	});
+};
+
+function createModel (attrs) {
+	return createClass (attrs);
 };
 
 function removeClass (id) {
@@ -184,10 +202,18 @@ function createView (attrs) {
 	});
 };
 
+function createQuery (attrs) {
+	return createView (attrs);
+};
+
 function removeView (id) {
 	return new Promise ((resolve, reject) => {
 		removeRsc ("view", id).then ((rsc) => resolve (rsc), err => reject (err));
 	});
+};
+
+function removeQuery (id) {
+	return removeView (id);
 };
 
 function createClassAttr (attrs) {
@@ -196,10 +222,20 @@ function createClassAttr (attrs) {
 	});
 };
 
+function createProperty (attrs) {
+	attrs ["class"] = attrs ["model"];
+	
+	return createClassAttr (attrs);
+};
+
 function removeClassAttr (id) {
 	return new Promise ((resolve, reject) => {
 		removeRsc ("classAttr", id).then ((rsc) => resolve (rsc), err => reject (err));
 	});
+};
+
+function removeProperty (id) {
+	return removeClassAttr (id);
 };
 
 function createViewAttr (attrs) {
@@ -208,10 +244,20 @@ function createViewAttr (attrs) {
 	});
 };
 
+function createColumn (attrs) {
+	attrs ["view"] = attrs ["query"];
+	
+	return createViewAttr (attrs);
+};
+
 function removeViewAttr (id) {
 	return new Promise ((resolve, reject) => {
 		removeRsc ("viewAttr", id).then ((rsc) => resolve (rsc), err => reject (err));
 	});
+};
+
+function removeColumn (id) {
+	return removeViewAttr (id);
 };
 
 function getClass (id) {
@@ -224,6 +270,10 @@ function getClass (id) {
 	}
 };
 
+function getModel (id) {
+	return getClass (id);
+};
+
 function getClassAttr (id) {
 	let o = map ["classAttr"][id];
 	
@@ -232,6 +282,10 @@ function getClassAttr (id) {
 	} else {
 		throw new Error (`unknown class attr: ${id}`);
 	}
+};
+
+function getProperty (id) {
+	return getClassAttr (id);
 };
 
 function getView (id) {
@@ -244,6 +298,10 @@ function getView (id) {
 	}
 };
 
+function getQuery (id) {
+	return getView (id);
+};
+
 function getViewAttr (id) {
 	let o = map ["viewAttr"][id];
 	
@@ -252,6 +310,10 @@ function getViewAttr (id) {
 	} else {
 		throw new Error (`unknown view attr: ${id}`);
 	}
+};
+
+function getColumn (id) {
+	return getViewAttr (id);
 };
 
 /*
@@ -311,19 +373,33 @@ module.exports = {
 	rollbackTransaction,
 	createObject,
 	getObject,
+	getRecord,
 	removeObject,
+	removeRecord,
 	createClass,
+	createModel,
 	getClass,
+	getModel,
 	removeClass,
+	removeModel,
 	createView,
+	createQuery,
 	getView,
+	getQuery,
 	removeView,
+	removeQuery,
 	createClassAttr,
+	createProperty,
 	getClassAttr,
+	getProperty,
 	removeClassAttr,
+	removeProperty,
 	createViewAttr,
+	createColumn,
 	getViewAttr,
+	getColumn,
 	removeViewAttr,
+	removeColumn,
 	getData,
 	getDict,
 	map,
