@@ -13,7 +13,7 @@ let map = {
 };
 const rscAttrs = {
 	"model": [
-		"id", "parent", "name", "code", "description", "order", "format", "view", "opts", "start", "end", "schema", "record"
+		"id", "parent", "name", "code", "description", "order", "format", "query", "opts", "start", "end", "schema", "record"
 	],
 	"property": [
 		"id", "model", "name", "code", "description", "order", "type", "notNull", "secure", "unique", "validFunc", "removeRule", "opts", "start", "end", "schema", "record"

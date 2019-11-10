@@ -292,6 +292,10 @@ function getDict (id) {
 	});
 };
 
+function getRecords (o) {
+	// todo: fields, include, limit, skip, where, order
+};
+
 function getUserId () {
 	return userId;
 };
