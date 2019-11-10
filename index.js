@@ -39,34 +39,34 @@ function load () {
 				data [rsc].forEach (row => {
 					let o = factory ({rsc, row});
 					
-					if (rsc == "class" || rsc == "view") {
+					if (rsc == "model" || rsc == "query") {
 						o.attrs = {};
 					}
 					map [rsc][o.get ("id")] = o;
 				});
-				if (rsc == "class" || rsc == "view") {
+				if (rsc == "model" || rsc == "query") {
 					Object.keys (map [rsc]).forEach (id => {
 						let o = map [rsc][id];
 						
 						map [rsc][o.getPath ()] = o;
 					});
 				}
-				if (rsc == "classAttr") {
-					Object.keys (map ["classAttr"]).forEach (id => {
-						let o = map ["classAttr"][id];
-						let oo = map ["class"][o.get ("class")];
+				if (rsc == "property") {
+					Object.keys (map ["property"]).forEach (id => {
+						let o = map ["property"][id];
+						let oo = map ["model"][o.get ("model")];
 						
 						oo.attrs [o.get ("code")] = o;
-						map ["classAttr"][oo.getPath () + "." + o.get ("code")] = o;
+						map ["property"][oo.getPath () + "." + o.get ("code")] = o;
 					});
 				}
-				if (rsc == "viewAttr") {
-					Object.keys (map ["viewAttr"]).forEach (id => {
-						let o = map ["viewAttr"][id];
-						let oo = map ["view"][o.get ("view")];
+				if (rsc == "column") {
+					Object.keys (map ["column"]).forEach (id => {
+						let o = map ["column"][id];
+						let oo = map ["query"][o.get ("query")];
 						
 						oo.attrs [o.get ("code")] = o;
-						map ["viewAttr"][oo.getPath () + "." + o.get ("code")] = o;
+						map ["column"][oo.getPath () + "." + o.get ("code")] = o;
 					});
 				}
 			});
@@ -84,7 +84,7 @@ function informer () {
 			revision
 		}).then (data => {
 			revision = data.revision;
-			data.objects.forEach (id => delete map ["object"][id]);
+			data.records.forEach (id => delete map ["record"][id]);
 			
 			informerId = setTimeout (informer, 5000);
 			resolve ();
@@ -148,172 +148,110 @@ function rollbackTransaction () {
 	});
 };
 
-function getObject (id) {
-	return new Promise ((resolve, reject) => {
-		getRsc ("object", id).then ((rsc) => resolve (rsc), err => reject (err));
-	});
-};
-
 function getRecord (id) {
-	return getObject (id);
-};
-
-function createObject (attrs) {
 	return new Promise ((resolve, reject) => {
-		createRsc ("object", attrs).then ((rsc) => resolve (rsc), err => reject (err));
+		getRsc ("record", id).then ((rsc) => resolve (rsc), err => reject (err));
 	});
 };
 
 function createRecord (attrs) {
-	attrs ["class"] = attrs ["model"];
-
-	return createObject (attrs);
-};
-
-function removeObject (id) {
 	return new Promise ((resolve, reject) => {
-		removeRsc ("object", id).then ((rsc) => resolve (rsc), err => reject (err));
+		createRsc ("record", attrs).then ((rsc) => resolve (rsc), err => reject (err));
 	});
 };
 
 function removeRecord (id) {
-	return removeObject (id);
-};
-
-function createClass (attrs) {
 	return new Promise ((resolve, reject) => {
-		createRsc ("class", attrs).then ((rsc) => resolve (rsc), err => reject (err));
+		removeRsc ("record", id).then ((rsc) => resolve (rsc), err => reject (err));
 	});
 };
 
 function createModel (attrs) {
-	return createClass (attrs);
-};
-
-function removeClass (id) {
 	return new Promise ((resolve, reject) => {
-		removeRsc ("class", id).then ((rsc) => resolve (rsc), err => reject (err));
+		createRsc ("model", attrs).then ((rsc) => resolve (rsc), err => reject (err));
 	});
 };
 
-function createView (attrs) {
+function removeModel (id) {
 	return new Promise ((resolve, reject) => {
-		createRsc ("view", attrs).then ((rsc) => resolve (rsc), err => reject (err));
+		removeRsc ("model", id).then ((rsc) => resolve (rsc), err => reject (err));
 	});
 };
 
 function createQuery (attrs) {
-	return createView (attrs);
-};
-
-function removeView (id) {
 	return new Promise ((resolve, reject) => {
-		removeRsc ("view", id).then ((rsc) => resolve (rsc), err => reject (err));
+		createRsc ("query", attrs).then ((rsc) => resolve (rsc), err => reject (err));
 	});
 };
 
 function removeQuery (id) {
-	return removeView (id);
-};
-
-function createClassAttr (attrs) {
 	return new Promise ((resolve, reject) => {
-		createRsc ("classAttr", attrs).then ((rsc) => resolve (rsc), err => reject (err));
+		removeRsc ("query", id).then ((rsc) => resolve (rsc), err => reject (err));
 	});
 };
 
 function createProperty (attrs) {
-	attrs ["class"] = attrs ["model"];
-	
-	return createClassAttr (attrs);
-};
-
-function removeClassAttr (id) {
 	return new Promise ((resolve, reject) => {
-		removeRsc ("classAttr", id).then ((rsc) => resolve (rsc), err => reject (err));
+		createRsc ("property", attrs).then ((rsc) => resolve (rsc), err => reject (err));
 	});
 };
 
 function removeProperty (id) {
-	return removeClassAttr (id);
-};
-
-function createViewAttr (attrs) {
 	return new Promise ((resolve, reject) => {
-		createRsc ("viewAttr", attrs).then ((rsc) => resolve (rsc), err => reject (err));
+		removeRsc ("property", id).then ((rsc) => resolve (rsc), err => reject (err));
 	});
 };
 
 function createColumn (attrs) {
-	attrs ["view"] = attrs ["query"];
-	
-	return createViewAttr (attrs);
-};
-
-function removeViewAttr (id) {
 	return new Promise ((resolve, reject) => {
-		removeRsc ("viewAttr", id).then ((rsc) => resolve (rsc), err => reject (err));
+		createRsc ("column", attrs).then ((rsc) => resolve (rsc), err => reject (err));
 	});
 };
 
 function removeColumn (id) {
-	return removeViewAttr (id);
-};
-
-function getClass (id) {
-	let o = map ["class"][id];
-	
-	if (o) {
-		return o;
-	} else {
-		throw new Error (`unknown class: ${id}`);
-	}
+	return new Promise ((resolve, reject) => {
+		removeRsc ("column", id).then ((rsc) => resolve (rsc), err => reject (err));
+	});
 };
 
 function getModel (id) {
-	return getClass (id);
-};
-
-function getClassAttr (id) {
-	let o = map ["classAttr"][id];
+	let o = map ["model"][id];
 	
 	if (o) {
 		return o;
 	} else {
-		throw new Error (`unknown class attr: ${id}`);
+		throw new Error (`unknown model: ${id}`);
 	}
 };
 
 function getProperty (id) {
-	return getClassAttr (id);
-};
-
-function getView (id) {
-	let o = map ["view"][id];
+	let o = map ["property"][id];
 	
 	if (o) {
 		return o;
 	} else {
-		throw new Error (`unknown view: ${id}`);
+		throw new Error (`unknown property: ${id}`);
 	}
 };
 
 function getQuery (id) {
-	return getView (id);
-};
-
-function getViewAttr (id) {
-	let o = map ["viewAttr"][id];
+	let o = map ["query"][id];
 	
 	if (o) {
 		return o;
 	} else {
-		throw new Error (`unknown view attr: ${id}`);
+		throw new Error (`unknown query: ${id}`);
 	}
 };
 
 function getColumn (id) {
-	return getViewAttr (id);
+	let o = map ["column"][id];
+	
+	if (o) {
+		return o;
+	} else {
+		throw new Error (`unknown column: ${id}`);
+	}
 };
 
 /*
@@ -326,8 +264,6 @@ async function execute (sql) {
 */
 
 function getData (opts) {
-	opts ["view"] = opts ["query"];
-	
 	return new Promise ((resolve, reject) => {
 		request (Object.assign ({
 			"fn": "getData"
@@ -347,7 +283,7 @@ function getDict (id) {
 		}
 		request ({
 			"fn": "getDict",
-			"class": id
+			"model": id
 		}).then (recs => {
 			map ["dict"][id] = recs;
 			
@@ -373,34 +309,20 @@ module.exports = {
 	startTransaction,
 	commitTransaction,
 	rollbackTransaction,
-	createObject,
-	getObject,
+	createRecord,
 	getRecord,
-	removeObject,
 	removeRecord,
-	createClass,
 	createModel,
-	getClass,
 	getModel,
-	removeClass,
 	removeModel,
-	createView,
 	createQuery,
-	getView,
 	getQuery,
-	removeView,
 	removeQuery,
-	createClassAttr,
 	createProperty,
-	getClassAttr,
 	getProperty,
-	removeClassAttr,
 	removeProperty,
-	createViewAttr,
 	createColumn,
-	getViewAttr,
 	getColumn,
-	removeViewAttr,
 	removeColumn,
 	getData,
 	getDict,

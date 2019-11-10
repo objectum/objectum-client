@@ -4,26 +4,26 @@ const {request} = require ("./request");
 
 let map = {
 	"sid": null,
-	"class": {},
-	"classAttr": {},
-	"view": {},
-	"viewAttr": {},
-	"object": {},
+	"model": {},
+	"property": {},
+	"query": {},
+	"column": {},
+	"record": {},
 	"dict": {}
 };
 const rscAttrs = {
-	"class": [
+	"model": [
 		"id", "parent", "name", "code", "description", "order", "format", "view", "opts", "start", "end", "schema", "record"
 	],
-	"classAttr": [
-		"id", "class", "name", "code", "description", "order", "type", "notNull", "secure", "unique", "validFunc", "removeRule", "opts", "start", "end", "schema", "record"
+	"property": [
+		"id", "model", "name", "code", "description", "order", "type", "notNull", "secure", "unique", "validFunc", "removeRule", "opts", "start", "end", "schema", "record"
 	],
-	"view": [
-		"id", "parent", "name", "code", "description", "order", "query", "layout", "iconCls", "system", "class", "opts", "start", "end", "schema", "record"
+	"query": [
+		"id", "parent", "name", "code", "description", "order", "query", "layout", "iconCls", "system", "model", "opts", "start", "end", "schema", "record"
 	],
-	"viewAttr": [
-		"id", "view", "name", "code", "description", "order", "classAttr", "area", "columnWidth", "opts", "start", "end", "schema", "record"
-	],
+	"column": [
+		"id", "query", "name", "code", "description", "order", "property", "area", "columnWidth", "opts", "start", "end", "schema", "record"
+	]
 };
 
 function parseRecDates (rec) {
@@ -184,7 +184,7 @@ class _Rsc {
 	getPath (o, path = []) {
 		let me = this;
 		
-		if (me.rsc != "class" && me.rsc != "view") {
+		if (me.rsc != "model" && me.rsc != "query") {
 			return null;
 		}
 		o = o || me;
@@ -202,9 +202,9 @@ class _Rsc {
 	}
 };
 
-class _Object extends _Rsc {
+class _Record extends _Rsc {
 	constructor (opts) {
-		opts.rsc = "object";
+		opts.rsc = "record";
 		super (opts);
 	}
 
@@ -217,9 +217,9 @@ class _Object extends _Rsc {
 	}
 };
 
-class _Class extends _Rsc {
+class _Model extends _Rsc {
 	constructor (opts) {
-		opts.rsc = "class";
+		opts.rsc = "model";
 		super (opts);
 	}
 
@@ -228,16 +228,16 @@ class _Class extends _Rsc {
 	}
 };
 
-class _ClassAttr extends _Rsc {
+class _Property extends _Rsc {
 	constructor (opts) {
-		opts.rsc = "classAttr";
+		opts.rsc = "property";
 		super (opts);
 	}
 	
 	getPath () {
 		let me = this;
 		
-		return `${map ["class"][me.get ("class")].getPath ()}.${me.get ("code")}`;
+		return `${map ["model"][me.get ("model")].getPath ()}.${me.get ("code")}`;
 	}
 	
 	getField () {
@@ -264,23 +264,23 @@ class _ClassAttr extends _Rsc {
 	}
 };
 
-class _View extends _Rsc {
+class _Query extends _Rsc {
 	constructor (opts) {
-		opts.rsc = "view";
+		opts.rsc = "query";
 		super (opts);
 	}
 };
 
-class _ViewAttr extends _Rsc {
+class _Column extends _Rsc {
 	constructor (opts) {
-		opts.rsc = "viewAttr";
+		opts.rsc = "column";
 		super (opts);
 	}
 	
 	getPath () {
 		let me = this;
 		
-		return `${map ["view"][me.get ("view")].getPath ()}.${me.get ("code")}`;
+		return `${map ["query"][me.get ("query")].getPath ()}.${me.get ("code")}`;
 	}
 	
 	getLabel () {
@@ -293,20 +293,20 @@ function factory (opts) {
 	let rsc = opts.rsc;
 	
 	switch (rsc) {
-		case "object":
-			o = new _Object (opts);
+		case "record":
+			o = new _Record (opts);
 			break;
-		case "class":
-			o = new _Class (opts);
+		case "model":
+			o = new _Model (opts);
 			break;
-		case "classAttr":
-			o = new _ClassAttr (opts);
+		case "property":
+			o = new _Property (opts);
 			break;
-		case "view":
-			o = new _View (opts);
+		case "query":
+			o = new _Query (opts);
 			break;
-		case "viewAttr":
-			o = new _ViewAttr (opts);
+		case "column":
+			o = new _Column (opts);
 			break;
 		default:
 			throw new Error (`factory: unknown resource: ${rsc}`);
