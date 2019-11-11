@@ -13,26 +13,26 @@ npm i objectum-client
     * [Start transaction](#startTransaction)
     * [Commit transaction](#commitTransaction)
     * [Rollback transaction](#rollbackTransaction)
-* [Classes](#classes)
-    * [Create class](#createClass)
-    * [Get class](#getClass)
-    * [Remove class](#removeClass)
-* [Class attributes](#classAttrs)
-    * [Create class attribute](#createClassAttre)
-    * [Get class attribute](#getClassAttr)
-    * [Remove class attribute](#removeClassAttr)
-* [Objects](#objects)
-    * [Create object](#createObject)
-    * [Get object](#getObject)
-    * [Remove object](#removeObject)
-* [Views](#views)
-    * [Create view](#createView)
-    * [Get view](#getView)
-    * [Remove view](#removeView)
-* [View attributes](#viewAttrs)
-    * [Create view attribute](#createViewAttr)
-    * [Get view attribute](#getViewAttr)
-    * [Remove view attribute](#removeViewAttr)
+* [Models](#models)
+    * [Create model](#createModel)
+    * [Get model](#getModel)
+    * [Remove model](#removeModel)
+* [Properties](#properties)
+    * [Create property](#createProperty)
+    * [Get property](#getProperty)
+    * [Remove property](#removeProperty)
+* [Records](#records)
+    * [Create record](#createRecord)
+    * [Get record](#getRecord)
+    * [Remove record](#removeRecord)
+* [Queries](#queries)
+    * [Create query](#createQuery)
+    * [Get query](#getQuery)
+    * [Remove query](#removeQuery)
+* [Columns](#columns)
+    * [Create column](#createColumn)
+    * [Get column](#getColumn)
+    * [Remove column](#removeColumn)
 * [Get data](#getData)
 * [Get dictionary](#getDict)
 * [Resources](#resources)
@@ -144,15 +144,15 @@ await store.rollbackTransaction ();
 }
 ```
 
-<a name="classes" />
+<a name="models" />
 
-## Classes
+## Models
 
-<a name="createClass" />
+<a name="createModel" />
 
-### Create class
+### Create model
 ```js
-await store.createClass ({
+await store.createModel ({
     "name": "Item",
     "code": "item"
 });
@@ -161,7 +161,7 @@ await store.createClass ({
 ```json
 {
     "fn": "create",
-    "rsc": "class",
+    "rsc": "model",
     "name": "Item",
     "code": "item"
 }
@@ -176,17 +176,17 @@ await store.createClass ({
 }
 ```
 
-<a name="getClass" />
+<a name="getModel" />
 
-### Get class
+### Get model
 ```js
-let o = await store.getClass ("item");
+let o = await store.getModel ("item");
 ```
 #### JSON request:
 ```json
 {
     "fn": "get",
-    "rsc": "class",
+    "rsc": "model",
     "id": "item"
 }
 ```
@@ -200,23 +200,23 @@ let o = await store.getClass ("item");
     "description": null,
     "order": null,
     "format": null,
-    "view": null,
+    "query": null,
     "opts": null,
     "start": 1006
 }
 ```
 
-<a name="removeClass" />
+<a name="removeModel" />
 
-### Remove class
+### Remove model
 ```js
-await store.removeClass ("item");
+await store.removeModel ("item");
 ```
 #### JSON request:
 ```json
 {
     "fn": "remove",
-    "rsc": "class",
+    "rsc": "model",
     "id": "item"
 }
 ```
@@ -227,16 +227,16 @@ await store.removeClass ("item");
 }
 ```
 
-<a name="classAttrs" />
+<a name="properties" />
 
-## Class attributes
+## Properties
 
-<a name="createClassAttr" />
+<a name="createProperty" />
 
-### Create class attribute
+### Create property
 ```js
-await store.createClassAttr ({
-    "class": "item",
+await store.createProperty ({
+    "model": "item",
     "type": "string",
     "name": "Name",
     "code": "name"
@@ -246,8 +246,8 @@ await store.createClassAttr ({
 ```json
 {
     "fn": "create",
-    "rsc": "classAttr",
-    "class": "item",
+    "rsc": "property",
+    "model": "item",
     "type": "string",
     "name": "Name",
     "code": "name"
@@ -257,7 +257,7 @@ await store.createClassAttr ({
 ```json
 {
     "id": 1013,
-    "class": 1006,
+    "model": 1006,
     "name": "Name",
     "code": "name",
     "type": 1,
@@ -265,17 +265,17 @@ await store.createClassAttr ({
 }
 ```
 
-<a name="getClassAttr" />
+<a name="getProperty" />
 
-### Get class attribute
+### Get property
 ```js
-await store.getClassAttr ("item.name");
+await store.getProperty ("item.name");
 ```
 #### JSON request:
 ```json
 {
     "fn": "get",
-    "rsc": "classAttr",
+    "rsc": "property",
     "id": "item.name"
 }
 ```
@@ -283,7 +283,7 @@ await store.getClassAttr ("item.name");
 ```json
 {
     "id": 1013,
-    "class": 1006,
+    "model": 1006,
     "name": "Name",
     "code": "name",
     "description": null,
@@ -299,17 +299,17 @@ await store.getClassAttr ("item.name");
 }
 ```
 
-<a name="removeClassAttr" />
+<a name="removeProperty" />
 
-### Remove class attribute
+### Remove property
 ```js
-await store.removeClassAttr ("item.name");
+await store.removeProperty ("item.name");
 ```
 #### JSON request:
 ```json
 {
     "fn": "remove",
-    "rsc": "classAttr",
+    "rsc": "property",
     "id": "item.name"
 }
 ```
@@ -320,16 +320,16 @@ await store.removeClassAttr ("item.name");
 }
 ```
 
-<a name="objects" />
+<a name="records" />
 
-## Objects
+## Records
 
-<a name="createObject" />
+<a name="createRecord" />
 
-### Create object
+### Create record
 ```js
-let o = await store.createObject ({
-    "class": "item",
+let o = await store.createRecord ({
+    "model": "item",
     "name": "Table"
 });
 ```
@@ -337,8 +337,8 @@ let o = await store.createObject ({
 ```json
 {
     "fn": "create",
-    "rsc": "object",
-    "class": "item",
+    "rsc": "record",
+    "model": "item",
     "name": "Table"
 }
 ```
@@ -346,23 +346,23 @@ let o = await store.createObject ({
 ```json
 {
     "id": 1005,
-    "class": 1006,
+    "model": 1006,
     "start": 1012
     "name": "Table"
 }
 ```
 
-<a name="getObject" />
+<a name="getModel" />
 
-### Get object
+### Get record
 ```js
-let o = await store.getObject (1005);
+let o = await store.getRecord (1005);
 ```
 #### JSON request:
 ```json
 {
     "fn": "get",
-    "rsc": "object",
+    "rsc": "record",
     "id": 1005
 }
 ```
@@ -370,22 +370,22 @@ let o = await store.getObject (1005);
 ```json
 {
     "id": 1005,
-    "class": 1006,
+    "model": 1006,
     "name": "Table"
 }
 ```
 
 <a name="removeObject" />
 
-### Remove object
+### Remove record
 ```js
-await store.removeObject (1005);
+await store.removeRecord (1005);
 ```
 #### JSON request:
 ```json
 {
     "fn": "remove",
-    "rsc": "object",
+    "rsc": "record",
     "id": 1005
 }
 ```
@@ -396,15 +396,15 @@ await store.removeObject (1005);
 }
 ```
 
-<a name="views" />
+<a name="queries" />
 
-## Views
+## Queries
 
-<a name="createView" />
+<a name="createQuery" />
 
-### Create view
+### Create query
 ```js
-let o = await store.createView ({
+let o = await store.createQuery ({
     "name": "Item",
     "code": "item"
 });
@@ -413,7 +413,7 @@ let o = await store.createView ({
 ```json
 {
     "fn": "create",
-    "rsc": "view",
+    "rsc": "query",
     "name": "Item",
     "code": "item"
 }
@@ -428,17 +428,17 @@ let o = await store.createView ({
 }
 ```
 
-<a name="getView" />
+<a name="getQuery" />
 
-### Get view
+### Get query
 ```js
-let o = await store.getView ("item");
+let o = await store.getQuery ("item");
 ```
 #### JSON request:
 ```json
 {
     "fn": "get",
-    "rsc": "view",
+    "rsc": "query",
     "id": "item"
 }
 ```
@@ -455,23 +455,23 @@ let o = await store.getView ("item");
     "layout": null,
     "iconCls": null,
     "system": null,
-    "class": null,
+    "model": null,
     "opts": null,
     "start": 1014
 }
 ```
 
-<a name="removeView" />
+<a name="removeQuery" />
 
-### Remove view
+### Remove query
 ```js
-await store.removeView ("item");
+await store.removeQuery ("item");
 ```
 #### JSON request:
 ```json
 {
     "fn": "remove",
-    "rsc": "view",
+    "rsc": "query",
     "id": "item"
 }
 ```
@@ -482,16 +482,16 @@ await store.removeView ("item");
 }
 ```
 
-<a name="viewAttrs" />
+<a name="columns" />
 
-## View attributes
+## Columns
 
-<a name="createViewAttr" />
+<a name="createColumn" />
 
-### Create view attribute
+### Create column
 ```js
-let o = await store.createViewAttr ({
-    "view": "item",
+let o = await store.createColumn ({
+    "query": "item",
     "name": "Name",
     "code": "name"
 });
@@ -500,8 +500,8 @@ let o = await store.createViewAttr ({
 ```json
 {
     "fn": "create",
-    "rsc": "viewAttr",
-    "view": "item",
+    "rsc": "column",
+    "query": "item",
     "name": "Name",
     "code": "name"
 }
@@ -510,24 +510,24 @@ let o = await store.createViewAttr ({
 ```json
 {
     "id": 1011,
-    "view": 1009,
+    "query": 1009,
     "name": "Name",
     "code": "name",
     "start": 1014
 }
 ```
 
-<a name="getViewAttr" />
+<a name="getColumn" />
 
-### Get view attribute
+### Get column
 ```js
-let o = await store.getViewAttr ("item.name");
+let o = await store.getColumn ("item.name");
 ```
 #### JSON request:
 ```json
 {
     "fn": "get",
-    "rsc": "viewAttr",
+    "rsc": "column",
     "id": "item.name"
 }
 ```
@@ -535,24 +535,24 @@ let o = await store.getViewAttr ("item.name");
 ```json
 {
     "id": 1011,
-    "view": 1009,
+    "query": 1009,
     "name": "Name",
     "code": "name",
     "start": 1014
 }
 ```
 
-<a name="removeViewAttr" />
+<a name="removeColumn" />
 
-### Remove view attribute
+### Remove column
 ```js
-await store.removeViewAttr ("item.name");
+await store.removeColumn ("item.name");
 ```
 #### JSON request:
 ```json
 {
     "fn": "remove",
-    "rsc": "viewAttr",
+    "rsc": "column",
     "id": "item.name"
 }
 ```
@@ -566,10 +566,10 @@ await store.removeViewAttr ("item.name");
 <a name="getData" />
 
 ## Get data
-Get data using query (SQL) from view.
+Get data using sql from query.
 ```js
 let data = await store.getData ({
-    view: "item",
+    query: "item",
     offset: 0,
     limit: 20
 });
@@ -578,8 +578,8 @@ SQL example:
 ```sql
 {"data": "begin"}
 select
-    {"attr": "a.id", "as": "id"},
-    {"attr": "a.name", "as": "name"}
+    {"prop": "a.id", "as": "id"},
+    {"prop": "a.name", "as": "name"}
 {"data": "end"}
 
 {"count": "begin"}
@@ -588,26 +588,26 @@ select
 {"count": "end"}
 
 from
-    {"class": "item", "alias": "a"}
+    {"model": "item", "alias": "a"}
 limit {"param": "limit"}
 offset {"param": "offset"}
 ```
-Select SQL:
+1. Select SQL:
 ```sql
 select
-    {"attr": "a.id", "as": "id"},
-    {"attr": "a.name", "as": "name"}
+    {"prop": "a.id", "as": "id"},
+    {"prop": "a.name", "as": "name"}
 from
-    {"class": "item", "alias": "a"}
+    {"model": "item", "alias": "a"}
 limit 20
 offset 0
 ```
-Count SQL:
+2. Count SQL:
 ```sql
 select
     count (*) as num
 from
-    {"class": "item", "alias": "a"}
+    {"model": "item", "alias": "a"}
 limit {config.query.maxCount}
 offset 0
 ```
@@ -615,7 +615,7 @@ offset 0
 ```json
 {
     "fn": "getData",
-    "view": "item",
+    "query": "item",
     "offset": 0,
     "limit": 20
 }
@@ -625,16 +625,16 @@ offset 0
 {
     "cols": [
         {
-            "class": 1006,
-            "classAttr": null,
+            "model": 1006,
+            "property": null,
             "code": "id",
             "name": "id",
             "order": 1,
             "type": 1
         },
         {
-            "class": 1006,
-            "classAttr": 1013,
+            "model": 1006,
+            "property": 1013,
             "code": "name",
             "name": "Name",
             "order": 2,
@@ -661,7 +661,7 @@ let recs = await store.getDict ("d.item.type");
 ```json
 {
     "fn": "getDict",
-    "class": "d.item.type"
+    "model": "d.item.type"
 }
 ```
 #### JSON response:
@@ -681,14 +681,14 @@ let recs = await store.getDict ("d.item.type");
 <a name="resources" />
 
 ## Resources
-Common methods for all resources: class, classAttr, view, viewAttr, object.
+Common methods for all resources: model, property, query, column, record.
 
 <a name="createRsc" />
 
 ### Create resource
 ```js
-let o = await store.createRsc ("object", {
-    "class": "item",
+let o = await store.createRsc ("record", {
+    "model": "item",
     "name": "Table"
 });
 ```
@@ -697,14 +697,14 @@ let o = await store.createRsc ("object", {
 
 ### Get resource
 ```js
-let o = await store.getRsc ("object", 1005);
+let o = await store.getRsc ("record", 1005);
 ```
 
 <a name="removeRsc" />
 
 ### Remove resource
 ```js
-await store.removeRsc ("object", 1005);
+await store.removeRsc ("record", 1005);
 ```
 
 <a name="setSessionId" />

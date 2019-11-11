@@ -41,6 +41,7 @@ function load () {
 					
 					if (rsc == "model" || rsc == "query") {
 						o.attrs = {};
+						o.properties = {};
 					}
 					map [rsc][o.get ("id")] = o;
 				});
@@ -57,6 +58,7 @@ function load () {
 						let oo = map ["model"][o.get ("model")];
 						
 						oo.attrs [o.get ("code")] = o;
+						oo.properties [o.get ("code")] = o;
 						map ["property"][oo.getPath () + "." + o.get ("code")] = o;
 					});
 				}
@@ -65,7 +67,7 @@ function load () {
 						let o = map ["column"][id];
 						let oo = map ["query"][o.get ("query")];
 						
-						oo.attrs [o.get ("code")] = o;
+						oo.properties [o.get ("code")] = o;
 						map ["column"][oo.getPath () + "." + o.get ("code")] = o;
 					});
 				}
