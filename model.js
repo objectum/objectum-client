@@ -226,6 +226,14 @@ class _Model extends _Rsc {
 	getTable () {
 		return `${this.get ("code")}_${this.get ("id")}`;
 	}
+	
+	isDictionary () {
+		return this.getPath ().substr (0, 2) == "d.";
+	}
+	
+	isTable () {
+		return this.getPath ().substr (0, 2) == "t.";
+	}
 };
 
 class _Property extends _Rsc {
