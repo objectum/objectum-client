@@ -270,7 +270,7 @@ function getData (opts) {
 		request (Object.assign ({
 			"fn": "getData"
 		}, opts)).then (result => {
-			result.recs.map (rec => {
+			result.recs = result.recs.map (rec => {
 				let newRec = {};
 				
 				result.cols.forEach ((col, i) => {
