@@ -270,8 +270,15 @@ function getData (opts) {
 		request (Object.assign ({
 			"fn": "getData"
 		}, opts)).then (result => {
-			result.recs.forEach (rec => {
-				parseRecDates (rec);
+			result.recs.map (rec => {
+				let newRec = {};
+				
+				result.cols.forEach ((col, i) => {
+					newRec [col.code] = rec [i];
+				});
+				parseRecDates (newRec);
+				
+				return newRec;
 			});
 			resolve (result);
 		}, err => reject (err));
