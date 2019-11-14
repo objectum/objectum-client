@@ -1,6 +1,6 @@
 "use strict";
 
-let sid, url, http, host, port, path;
+let sid, url, http, host, port, path, code;
 
 function isServer () {
 	if (typeof window !== "undefined") {
@@ -27,8 +27,10 @@ function setUrl (_url) {
 		host = opts.hostname;
 		port = opts.port || (opts.protocol == "https:" ? 443 : 80);
 		path = opts.path;
+		code = path.split ("/")[3];
 	} else {
 		url = _url;
+		code = url.split ("/")[3];
 	}
 };
 
@@ -146,11 +148,16 @@ function serverRequest (json) {
 	});
 };
 
+function getCode () {
+	return code;
+};
+
 module.exports = {
 	request: isServer () ? serverRequest : clientRequest,
 	setSessionId,
 	getSessionId,
 	setUrl,
-	getUrl
+	getUrl,
+	getCode
 };
 
