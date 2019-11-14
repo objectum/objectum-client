@@ -301,8 +301,26 @@ function getDict (id) {
 	});
 };
 
-function getRecords (o) {
-	// todo: fields, include, limit, skip, where, order
+function getRecords (opts) {
+/*
+	return new Promise ((resolve, reject) => {
+		request (Object.assign ({
+			"fn": "getRecords"
+		}, opts)).then (result => {
+			result.recs = result.recs.map (rec => {
+				let newRec = {};
+				
+				result.cols.forEach ((col, i) => {
+					newRec [col.code] = rec [i];
+				});
+				parseRecDates (newRec);
+				
+				return newRec;
+			});
+			resolve (result);
+		}, err => reject (err));
+	});
+*/
 };
 
 function getUserId () {
