@@ -1,7 +1,7 @@
 "use strict";
 
 const {map, rscAttrs, factory, getRsc, createRsc, removeRsc, parseRecDates} = require ("./model");
-const {setSessionId, getSessionId, setUrl, getUrl, getCode, request} = require ("./request");
+const {setSessionId, getSessionId, setUrl, getUrl, request} = require ("./request");
 let userId = null, roleId = null, menuId = null;
 
 let listeners = {};
@@ -366,7 +366,6 @@ module.exports = {
 	getSessionId,
 	setUrl,
 	getUrl,
-	getCode,
 	getUserId,
 	getRoleId,
 	getMenuId,
