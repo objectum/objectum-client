@@ -33,7 +33,7 @@ function callListeners (event, opts) {
 function load () {
 	return new Promise ((resolve, reject) => {
 		request ({
-			"fn": "getAll"
+			"_fn": "getAll"
 		}).then (data => {
 			Object.keys (rscAttrs).forEach (rsc => {
 				data [rsc].forEach (row => {
@@ -82,7 +82,7 @@ let informerId, revision = 0;
 function informer () {
 	return new Promise ((resolve, reject) => {
 		request ({
-			"fn": "getNews",
+			"_fn": "getNews",
 			revision
 		}).then (data => {
 			revision = data.revision;
@@ -104,7 +104,7 @@ function auth ({url, username, password}) {
 			setUrl (url);
 		}
 		request ({
-			"fn": "auth",
+			"_fn": "auth",
 			username,
 			password
 		}).then (data => {
@@ -128,7 +128,7 @@ function auth ({url, username, password}) {
 function startTransaction (description) {
 	return new Promise ((resolve, reject) => {
 		request ({
-			"fn": "startTransaction",
+			"_fn": "startTransaction",
 			description
 		}).then (() => resolve (), err => reject (err));
 	});
@@ -137,7 +137,7 @@ function startTransaction (description) {
 function commitTransaction () {
 	return new Promise ((resolve, reject) => {
 		request ({
-			"fn": "commitTransaction"
+			"_fn": "commitTransaction"
 		}).then (() => resolve (), err => reject (err));
 	});
 };
@@ -145,7 +145,7 @@ function commitTransaction () {
 function rollbackTransaction () {
 	return new Promise ((resolve, reject) => {
 		request ({
-			"fn": "rollbackTransaction"
+			"_fn": "rollbackTransaction"
 		}).then (() => resolve (), err => reject (err));
 	});
 };
@@ -268,7 +268,7 @@ async function execute (sql) {
 function getData (opts) {
 	return new Promise ((resolve, reject) => {
 		request (Object.assign ({
-			"fn": "getData"
+			"_fn": "getData"
 		}, opts)).then (result => {
 			result.recs = result.recs.map (rec => {
 				let newRec = {};
@@ -305,7 +305,7 @@ function getRecords (opts) {
 /*
 	return new Promise ((resolve, reject) => {
 		request (Object.assign ({
-			"fn": "getRecords"
+			"_fn": "getRecords"
 		}, opts)).then (result => {
 			result.recs = result.recs.map (rec => {
 				let newRec = {};
