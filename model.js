@@ -200,6 +200,10 @@ class _Rsc {
 	getLabel () {
 		return `${this.get ("name")} (${this.getPath ()}: ${this.get ("id")})`;
 	}
+	
+	getOpts () {
+		return JSON.parse (this.get ("opts") || "{}");
+	}
 };
 
 class _Record extends _Rsc {
