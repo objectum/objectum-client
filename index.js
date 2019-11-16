@@ -291,7 +291,7 @@ function getDict (id) {
 			return resolve (map ["dict"][id]);
 		}
 		request ({
-			"fn": "getDict",
+			"_fn": "getDict",
 			"model": id
 		}).then (recs => {
 			map ["dict"][id] = recs;

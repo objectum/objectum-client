@@ -51,8 +51,8 @@ function getRsc (rsc, id) {
 			resolve (o);
 		} else {
 			request ({
-				fn: "get",
-				rsc,
+				_fn: "get",
+				_rsc: rsc,
 				id
 			}).then (data => {
 				o = factory ({rsc, data});
@@ -69,8 +69,8 @@ function getRsc (rsc, id) {
 function createRsc (rsc, attrs) {
 	return new Promise ((resolve, reject) => {
 		request (Object.assign ({
-			fn: "create",
-			rsc
+			_fn: "create",
+			_rsc: rsc
 		}, attrs)).then (data => {
 			let o = factory ({rsc, data});
 			
@@ -85,8 +85,8 @@ function createRsc (rsc, attrs) {
 function removeRsc (rsc, id) {
 	return new Promise ((resolve, reject) => {
 		request ({
-			fn: "remove",
-			rsc,
+			_fn: "remove",
+			_rsc: rsc,
 			id
 		}).then (() => {
 			delete map [rsc][id];
@@ -105,17 +105,17 @@ class _Rsc {
 	constructor ({rsc, row, data}) {
 		let me = this;
 		
-		me.rsc = rsc;
-		me.data = {};
-		me.originalData = {};
-		me.removed = false;
+		me._rsc = rsc;
+		me._data = {};
+		me._originalData = {};
+		me._removed = false;
 
 		let initValue = function (a, v) {
-			me.data [a] = v;
-			me.originalData [a] = v;
+			me._data [a] = v;
+			me._originalData [a] = v;
 		};
-		parseRecDates (me.data);
-		parseRecDates (me.originalData);
+		parseRecDates (me._data);
+		parseRecDates (me._originalData);
 		
 		if (data) {
 			Object.keys (data).forEach (a => {
@@ -130,7 +130,7 @@ class _Rsc {
 	}
 	
 	get (a) {
-		return this.data [a];
+		return this._data [a];
 	}
 	
 	set (a, v) {
@@ -141,40 +141,40 @@ class _Rsc {
 				me.set (aa, a [aa]);
 			});
 		}
-		if (a == "id" && me.data.id) {
+		if (a == "id" && me._data.id) {
 			return;
 		}
-		me.data [a] = v;
+		me._data [a] = v;
 	}
 	
 	remove () {
-		this.removed = true;
+		this._removed = true;
 	}
 
 	sync () {
 		return new Promise ((resolve, reject) => {
 			let me = this;
 			
-			if (me.removed) {
+			if (me._removed) {
 				return removeRsc (me.rsc, me.get ("id")).then (() => resolve (), err => reject (err));
 			}
 			let attrs = {};
 			
 			for (let a in me.data) {
-				if (me.originalData [a] instanceof Date) {
-					me.originalData [a] = me.originalData [a].toISOString ();
+				if (me._originalData [a] instanceof Date) {
+					me._originalData [a] = me._originalData [a].toISOString ();
 				}
-				if (me.data [a] instanceof Date) {
-					me.data [a] = me.data [a].toISOString ();
+				if (me._data [a] instanceof Date) {
+					me._data [a] = me._data [a].toISOString ();
 				}
-				if (! me.originalData.hasOwnProperty (a) || me.originalData [a] != me.data [a]) {
-					attrs [a] = me.data [a];
+				if (! me._originalData.hasOwnProperty (a) || me._originalData [a] != me.data [a]) {
+					attrs [a] = me._data [a];
 				}
 			}
 			if (Object.keys (attrs).length) {
 				request (Object.assign ({
-					fn: "set",
-					rsc: me.rsc,
+					_fn: "set",
+					_rsc: me.rsc,
 					id: me.get ("id")
 				}, attrs)).then (() => resolve (), err => reject (err));
 			}
@@ -184,14 +184,14 @@ class _Rsc {
 	getPath (o, path = []) {
 		let me = this;
 		
-		if (me.rsc != "model" && me.rsc != "query") {
+		if (me._rsc != "model" && me._rsc != "query") {
 			return null;
 		}
 		o = o || me;
 		path.unshift (o.get ("code"));
 		
 		if (o.get ("parent")) {
-			return this.getPath (map [me.rsc][o.get ("parent")], path);
+			return this.getPath (map [me._rsc][o.get ("parent")], path);
 		} else {
 			return path.join (".");
 		}
