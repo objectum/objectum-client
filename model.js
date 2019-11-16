@@ -156,18 +156,18 @@ class _Rsc {
 			let me = this;
 			
 			if (me._removed) {
-				return removeRsc (me.rsc, me.get ("id")).then (() => resolve (), err => reject (err));
+				return removeRsc (me._rsc, me.get ("id")).then (() => resolve (), err => reject (err));
 			}
 			let attrs = {};
 			
-			for (let a in me.data) {
+			for (let a in me._data) {
 				if (me._originalData [a] instanceof Date) {
 					me._originalData [a] = me._originalData [a].toISOString ();
 				}
 				if (me._data [a] instanceof Date) {
 					me._data [a] = me._data [a].toISOString ();
 				}
-				if (! me._originalData.hasOwnProperty (a) || me._originalData [a] != me.data [a]) {
+				if (! me._originalData.hasOwnProperty (a) || me._originalData [a] != me._data [a]) {
 					attrs [a] = me._data [a];
 				}
 			}
