@@ -174,7 +174,7 @@ class _Rsc {
 			if (Object.keys (attrs).length) {
 				request (Object.assign ({
 					_fn: "set",
-					_rsc: me.rsc,
+					_rsc: me._rsc,
 					id: me.get ("id")
 				}, attrs)).then (() => resolve (), err => reject (err));
 			}
