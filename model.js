@@ -77,6 +77,14 @@ function createRsc (rsc, attrs) {
 			map [rsc][o.get ("id")] = o;
 			map [rsc][o.getPath ()] = o;
 			
+			if (rsc == "record" && attrs ["_model"]) {
+				let m = map ["model"][attrs ["_model"]];
+				
+				if (m.isDictionary ()) {
+					delete map ["dict"][m.get ("id")];
+					delete map ["dict"][m.getPath ()];
+				}
+			}
 			resolve (o);
 		}, err => reject (err));
 	});
@@ -95,6 +103,15 @@ function removeRsc (rsc, id) {
 			
 			if (o) {
 				delete map [rsc][o.getPath ()];
+
+				if (rsc == "record") {
+					let m = map ["model"][attrs ["_model"]];
+					
+					if (m && m.isDictionary ()) {
+						delete map ["dict"][m.get ("id")];
+						delete map ["dict"][m.getPath ()];
+					}
+				}
 			}
 			resolve ();
 		}, err => reject (err));
@@ -176,7 +193,17 @@ class _Rsc {
 					_fn: "set",
 					_rsc: me._rsc,
 					id: me.get ("id")
-				}, attrs)).then (() => resolve (), err => reject (err));
+				}, attrs)).then (() => {
+					if (me._rsc == "record") {
+						let m = map ["model"][me.get ("_model")];
+						
+						if (m && m.isDictionary ()) {
+							delete map ["dict"][m.get ("id")];
+							delete map ["dict"][m.getPath ()];
+						}
+					}
+					resolve ();
+				}, err => reject (err));
 			}
 		});
 	}
