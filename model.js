@@ -104,6 +104,8 @@ function removeRsc (rsc, id) {
 			if (o) {
 				delete map [rsc][o.getPath ()];
 
+/*
+todo: no loaded record
 				if (rsc == "record") {
 					let m = map ["model"][attrs ["_model"]];
 					
@@ -112,6 +114,7 @@ function removeRsc (rsc, id) {
 						delete map ["dict"][m.getPath ()];
 					}
 				}
+*/
 			}
 			resolve ();
 		}, err => reject (err));
