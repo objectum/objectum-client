@@ -125,10 +125,38 @@ class _Rsc {
 	constructor ({rsc, row, data}) {
 		let me = this;
 		
+/*
 		me._rsc = rsc;
 		me._data = {};
 		me._originalData = {};
 		me._removed = false;
+*/
+		Object.defineProperties (me, {
+			_rsc: {
+				value: rsc,
+				writable: false,
+				enumerable: false,
+				configurable: false
+			},
+			_data: {
+				value: {},
+				writable: false,
+				enumerable: false,
+				configurable: false
+			},
+			_originalData: {
+				value: {},
+				writable: false,
+				enumerable: false,
+				configurable: false
+			},
+			_removed: {
+				value: false,
+				writable: true,
+				enumerable: false,
+				configurable: false
+			}
+		});
 
 		let initValue = function (a, v) {
 			me._data [a] = v;
