@@ -274,7 +274,7 @@ class _Record extends _Rsc {
 		if (opts.data && opts.data ["_model"]) {
 			getRsc ("model", opts.data ["_model"]).then (m => {
 				for (let code in m.properties) {
-					Object.defineProperties (me, code, {
+					Object.defineProperty (me, code, {
 						get () {
 							return me.get (code);
 						},
