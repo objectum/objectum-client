@@ -272,18 +272,18 @@ class _Record extends _Rsc {
 		let me = this;
 		
 		if (opts.data && opts.data ["_model"]) {
-			let m = getRsc ("model", opts.data ["_model"]);
-			
-			for (let code in m.properties) {
-				Object.defineProperties (me, [code], {
-					get () {
-						return me.get (code);
-					},
-					set (value) {
-						me.set (code, value);
-					}
-				});
-			}
+			getRsc ("model", opts.data ["_model"]).then (m => {
+				for (let code in m.properties) {
+					Object.defineProperties (me, [code], {
+						get () {
+							return me.get (code);
+						},
+						set (value) {
+							me.set (code, value);
+						}
+					});
+				}
+			});
 		}
 	}
 
