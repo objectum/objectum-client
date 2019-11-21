@@ -57,9 +57,11 @@ function load () {
 						let o = map ["property"][id];
 						let oo = map ["model"][o.get ("model")];
 						
-						oo.attrs [o.get ("code")] = o;
-						oo.properties [o.get ("code")] = o;
-						map ["property"][oo.getPath () + "." + o.get ("code")] = o;
+						if (oo) {
+							oo.attrs [o.get ("code")] = o;
+							oo.properties [o.get ("code")] = o;
+							map ["property"][oo.getPath () + "." + o.get ("code")] = o;
+						}
 					});
 				}
 				if (rsc == "column") {
@@ -67,8 +69,10 @@ function load () {
 						let o = map ["column"][id];
 						let oo = map ["query"][o.get ("query")];
 						
-						oo.properties [o.get ("code")] = o;
-						map ["column"][oo.getPath () + "." + o.get ("code")] = o;
+						if (oo) {
+							oo.properties [o.get ("code")] = o;
+							map ["column"][oo.getPath () + "." + o.get ("code")] = o;
+						}
 					});
 				}
 			});
