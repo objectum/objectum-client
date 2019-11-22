@@ -34,6 +34,11 @@ npm i objectum-client
     * [Get column](#getColumn)
     * [Remove column](#removeColumn)
 * [Get data](#getData)
+    * [Query SQL](#getDataSql)
+        * [Select](#getDataSelect)
+        * [Select and count](#getDataCount)
+        * [Tree](#getDataTree)
+    * [Model](#getDataModel)
 * [Get dictionary](#getDict)
 * [Resources](#resources)
     * [Create resource](#createRsc)
@@ -51,7 +56,7 @@ npm i objectum-client
 ```js
 const store = require ("objectum-client");
 
-store.setUrl ("http://127.0.0.1:8200/api/projects/catalog/");
+store.setUrl ("http://127.0.0.1:8200/projects/catalog/");
 ```
 
 <a name="auth" />
@@ -59,27 +64,10 @@ store.setUrl ("http://127.0.0.1:8200/api/projects/catalog/");
 ## Authentication
 Auth with username "admin", password "admin".
 ```js
-let sid = await store.auth ({
+let sessionId = await store.auth ({
     "username": "admin",
     "password": require ("crypto").createHash ("sha1").update ("admin").digest ("hex").toUpperCase ()
 });
-```
-#### JSON request:
-```json
-{
-    "fn": "auth",
-    "username": "admin",
-    "password": "D033E22AE348AEB5660FC2140AEC35850C4DA997"
-}
-```
-#### JSON response:
-```json
-{
-    "sessionId": "...",
-    "userId": null,
-    "roleId": "admin",
-    "menuId": "admin"
-}
 ```
 
 <a name="transactions" />
@@ -92,19 +80,6 @@ let sid = await store.auth ({
 ```js
 await store.startTransaction ("My description");
 ```
-#### JSON request:
-```json
-{
-    "fn": "startTransaction",
-    "description": "My description"
-}
-```
-#### JSON response:
-```json
-{
-    "revision": 1000
-}
-```
 
 <a name="commitTransaction" />
 
@@ -112,36 +87,12 @@ await store.startTransaction ("My description");
 ```js
 await store.commitTransaction ();
 ```
-#### JSON request:
-```json
-{
-    "fn": "commitTransaction"
-}
-```
-#### JSON response:
-```json
-{
-    "revision": 1000
-}
-```
 
 <a name="rollbackTransaction" />
 
 ### Rollback transaction
 ```js
 await store.rollbackTransaction ();
-```
-#### JSON request:
-```json
-{
-    "fn": "rollbackTransaction"
-}
-```
-#### JSON response:
-```json
-{
-    "revision": 1000
-}
 ```
 
 <a name="models" />
@@ -157,24 +108,6 @@ await store.createModel ({
     "code": "item"
 });
 ```
-#### JSON request:
-```json
-{
-    "fn": "create",
-    "rsc": "model",
-    "name": "Item",
-    "code": "item"
-}
-```
-#### JSON response:
-```json
-{
-    "id": 1006,
-    "name": "Item",
-    "code": "item",
-    "start": 1006
-}
-```
 
 <a name="getModel" />
 
@@ -182,49 +115,12 @@ await store.createModel ({
 ```js
 let o = await store.getModel ("item");
 ```
-#### JSON request:
-```json
-{
-    "fn": "get",
-    "rsc": "model",
-    "id": "item"
-}
-```
-#### JSON response:
-```json
-{
-    "id": 1006,
-    "parent": null,
-    "name": "Item",
-    "code": "item",
-    "description": null,
-    "order": null,
-    "format": null,
-    "query": null,
-    "opts": null,
-    "start": 1006
-}
-```
 
 <a name="removeModel" />
 
 ### Remove model
 ```js
 await store.removeModel ("item");
-```
-#### JSON request:
-```json
-{
-    "fn": "remove",
-    "rsc": "model",
-    "id": "item"
-}
-```
-#### JSON response:
-```json
-{
-    "id": 1006
-}
 ```
 
 <a name="properties" />
@@ -242,28 +138,6 @@ await store.createProperty ({
     "code": "name"
 });
 ```
-#### JSON request:
-```json
-{
-    "fn": "create",
-    "rsc": "property",
-    "model": "item",
-    "type": "string",
-    "name": "Name",
-    "code": "name"
-}
-```
-#### JSON response:
-```json
-{
-    "id": 1013,
-    "model": 1006,
-    "name": "Name",
-    "code": "name",
-    "type": 1,
-    "start": 1011
-}
-```
 
 <a name="getProperty" />
 
@@ -271,53 +145,12 @@ await store.createProperty ({
 ```js
 await store.getProperty ("item.name");
 ```
-#### JSON request:
-```json
-{
-    "fn": "get",
-    "rsc": "property",
-    "id": "item.name"
-}
-```
-#### JSON response:
-```json
-{
-    "id": 1013,
-    "model": 1006,
-    "name": "Name",
-    "code": "name",
-    "description": null,
-    "order": null,
-    "type": 1,
-    "notNull": null,
-    "secure": null,
-    "unique": null,
-    "validFunc": null,
-    "removeRule": null,
-    "opts": null,
-    "start": 1011
-}
-```
 
 <a name="removeProperty" />
 
 ### Remove property
 ```js
 await store.removeProperty ("item.name");
-```
-#### JSON request:
-```json
-{
-    "fn": "remove",
-    "rsc": "property",
-    "id": "item.name"
-}
-```
-#### JSON response:
-```json
-{
-    "id": 1013
-}
 ```
 
 <a name="records" />
@@ -333,67 +166,19 @@ let o = await store.createRecord ({
     "name": "Table"
 });
 ```
-#### JSON request:
-```json
-{
-    "fn": "create",
-    "rsc": "record",
-    "model": "item",
-    "name": "Table"
-}
-```
-#### JSON response:
-```json
-{
-    "id": 1005,
-    "model": 1006,
-    "start": 1012
-    "name": "Table"
-}
-```
 
-<a name="getModel" />
+<a name="getRecord" />
 
 ### Get record
 ```js
 let o = await store.getRecord (1005);
 ```
-#### JSON request:
-```json
-{
-    "fn": "get",
-    "rsc": "record",
-    "id": 1005
-}
-```
-#### JSON response:
-```json
-{
-    "id": 1005,
-    "model": 1006,
-    "name": "Table"
-}
-```
 
-<a name="removeObject" />
+<a name="removeRecord" />
 
 ### Remove record
 ```js
 await store.removeRecord (1005);
-```
-#### JSON request:
-```json
-{
-    "fn": "remove",
-    "rsc": "record",
-    "id": 1005
-}
-```
-#### JSON response:
-```json
-{
-    "id": 1005
-}
 ```
 
 <a name="queries" />
@@ -409,24 +194,6 @@ let o = await store.createQuery ({
     "code": "item"
 });
 ```
-#### JSON request:
-```json
-{
-    "fn": "create",
-    "rsc": "query",
-    "name": "Item",
-    "code": "item"
-}
-```
-#### JSON response:
-```json
-{
-    "id": 1009,
-    "name": "Item",
-    "code": "item",
-    "start": 1014
-}
-```
 
 <a name="getQuery" />
 
@@ -434,52 +201,12 @@ let o = await store.createQuery ({
 ```js
 let o = await store.getQuery ("item");
 ```
-#### JSON request:
-```json
-{
-    "fn": "get",
-    "rsc": "query",
-    "id": "item"
-}
-```
-#### JSON response:
-```json
-{
-    "id": 1009,
-    "parent": null,
-    "name": "Item",
-    "code": "item",
-    "description": null,
-    "order": null,
-    "query": null,
-    "layout": null,
-    "iconCls": null,
-    "system": null,
-    "model": null,
-    "opts": null,
-    "start": 1014
-}
-```
 
 <a name="removeQuery" />
 
 ### Remove query
 ```js
 await store.removeQuery ("item");
-```
-#### JSON request:
-```json
-{
-    "fn": "remove",
-    "rsc": "query",
-    "id": "item"
-}
-```
-#### JSON response:
-```json
-{
-    "id": 1009
-}
 ```
 
 <a name="columns" />
@@ -496,50 +223,12 @@ let o = await store.createColumn ({
     "code": "name"
 });
 ```
-#### JSON request:
-```json
-{
-    "fn": "create",
-    "rsc": "column",
-    "query": "item",
-    "name": "Name",
-    "code": "name"
-}
-```
-#### JSON response:
-```json
-{
-    "id": 1011,
-    "query": 1009,
-    "name": "Name",
-    "code": "name",
-    "start": 1014
-}
-```
 
 <a name="getColumn" />
 
 ### Get column
 ```js
 let o = await store.getColumn ("item.name");
-```
-#### JSON request:
-```json
-{
-    "fn": "get",
-    "rsc": "column",
-    "id": "item.name"
-}
-```
-#### JSON response:
-```json
-{
-    "id": 1011,
-    "query": 1009,
-    "name": "Name",
-    "code": "name",
-    "start": 1014
-}
 ```
 
 <a name="removeColumn" />
@@ -548,31 +237,60 @@ let o = await store.getColumn ("item.name");
 ```js
 await store.removeColumn ("item.name");
 ```
-#### JSON request:
-```json
-{
-    "fn": "remove",
-    "rsc": "column",
-    "id": "item.name"
-}
-```
-#### JSON response:
-```json
-{
-    "id": 1011
-}
-```
 
 <a name="getData" />
 
 ## Get data
+
+<a name="getDataSql" />
+
+### Query SQL
+
 Get data using sql from query.
+
+<a name="getDataSelect" />
+
+#### Select
+
+Used in simple read data.
+
 ```js
 let data = await store.getData ({
     query: "item",
     offset: 0,
     limit: 20
 });
+console.log (data.cols, data.recs);
+```
+SQL example:
+```sql
+select
+    {"prop": "a.id", "as": "id"},
+    {"prop": "a.name", "as": "name"}
+from
+    {"model": "item", "alias": "a"}
+
+{"where": "empty"}
+
+limit {"param": "limit"}
+offset {"param": "offset"}
+```
+
+<a name="getDataCount" />
+
+#### Select and count
+
+Used in grid. 
+{"where": "empty"} - where class for filters and security in future version.
+{"order": "empty"} - order class for order.
+    
+```js
+let data = await store.getData ({
+    query: "item",
+    offset: 0,
+    limit: 20
+});
+console.log (data.cols, data.recs, data.length);
 ```
 SQL example:
 ```sql
@@ -589,6 +307,11 @@ select
 
 from
     {"model": "item", "alias": "a"}
+    
+{"where": "empty"}
+
+{"order": "empty"}
+    
 limit {"param": "limit"}
 offset {"param": "offset"}
 ```
@@ -611,71 +334,112 @@ from
 limit {config.query.maxCount}
 offset 0
 ```
-#### JSON request:
-```json
-{
-    "fn": "getData",
-    "query": "item",
-    "offset": 0,
-    "limit": 20
-}
+
+<a name="getDataTree" />
+
+#### Tree
+```js
+let data = await store.getData ({
+    query: "item",
+    offset: 0,
+    limit: 20
+});
+console.log (data.cols, data.recs, data.length, data.childs, data.position);
 ```
-#### JSON response:
-```json
-{
-    "cols": [
-        {
-            "model": 1006,
-            "property": null,
-            "code": "id",
-            "name": "id",
-            "order": 1,
-            "type": 1
-        },
-        {
-            "model": 1006,
-            "property": 1013,
-            "code": "name",
-            "name": "Name",
-            "order": 2,
-            "type": 1
-        }
-    ],
-    "length": 1,
-    "recs": [
-        {
-            "id": 1005,
-            "name": "Table"
-        }
-    ]
-}
+SQL example:
+```sql
+{"data": "begin"}
+select
+    {"prop": "a.id", "as": "id"},
+    {"prop": "a.name", "as": "name"},
+    {"prop": "a.parent", "as": "parent"},
+    {"prop": "a.order", "as": "order"}
+{"data": "end"}
+
+{"count": "begin"}
+select
+    count (*) as num
+{"count": "end"}
+
+{"tree": "begin"}
+select
+    {"prop": "a.parent", "as": "parent"}, count (*) as num
+{"tree": "end"}
+
+from
+    {"model": "item", "alias": "a"}
+
+{"where": "begin"}
+    {"prop": "a.parent"} {"tree": "filter"}
+{"where": "end"}    
+
+{"order": "begin"}
+    {"prop": "a.order"}
+{"order": "end"}
+
+{"tree": "begin"}
+group by
+    {"prop": "a.parent"}
+{"tree": "end"}
+
+limit {"param": "limit"}
+offset {"param": "offset"}  
 ```
+1. Select SQL:
+```sql
+select
+    {"prop": "a.id", "as": "id"},
+    {"prop": "a.name", "as": "name"},
+    {"prop": "a.order", "as": "order"},
+    {"prop": "a.parent", "as": "parent"}
+from
+    {"model": "item", "alias": "a"}
+where
+    {"prop": "a.parent"} is null
+order by
+    {"prop": "a.order"}
+limit 0
+offset 20  
+```
+2. Count SQL:
+```sql
+select
+    count (*) as num
+from
+    {"model": "item", "alias": "a"}
+where
+    {"prop": "a.parent"} is null
+limit {config.query.maxCount}
+offset 0
+```
+3. Childs SQL
+```sql
+select
+    {"prop": "a.parent", "as": "parent"}, count (*) as num
+from
+    {"model": "item", "alias": "a"}
+where
+    {"prop": "a.parent"} in (${_.map (data.recs, "id").join (",")})
+group by
+    {"prop": "a.parent"}
+```
+
+<a name="getDataModel" />
+
+#### Model
+```js
+let data = await store.getData ({
+    model: "item",
+    offset: 0,
+    limit: 20
+});
+console.log (data.cols, data.recs, data.length);
 
 <a name="getDict" />
 
 ## Get dictionary
 ```js
 let recs = await store.getDict ("d.item.type");
-```
-#### JSON request:
-```json
-{
-    "fn": "getDict",
-    "model": "d.item.type"
-}
-```
-#### JSON response:
-```json
-[
-    {
-        "id": 1100,
-        "name": "Furniture"
-    },
-    {
-        "id": 1101,
-        "name": "Tool"
-    }
-]
 ```
 
 <a name="resources" />
