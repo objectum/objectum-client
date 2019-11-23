@@ -305,6 +305,18 @@ function getDict (id) {
 	});
 };
 
+function getLog (recordId, propertyId) {
+	return new Promise ((resolve, reject) => {
+		request ({
+			"_fn": "getLog",
+			"record": recordId,
+			"property": propertyId
+		}).then (recs => {
+			resolve (recs);
+		}, err => reject (err));
+	});
+};
+
 function getRecords (opts) {
 /*
 	return new Promise ((resolve, reject) => {
@@ -361,6 +373,7 @@ module.exports = {
 	removeColumn,
 	getData,
 	getDict,
+	getLog,
 	map,
 	factory,
 	getRsc,
