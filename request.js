@@ -177,6 +177,9 @@ function upload ({recordId, propertyId, name, file}) {
 			});
 			formData.pipe (req);
 			
+			req.on ("error", function (err) {
+				reject (err);
+			});
 			req.on ("response", (res) => {
 				resolve (res.statusCode);
 			});
