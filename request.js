@@ -146,11 +146,38 @@ function serverRequest (json) {
 	});
 };
 
+async function upload ({recordId, propertyId, name, file}) {
+	let formData;
+	
+	if (isServer ()) {
+		let FormData = require ("form-data");
+		
+		formData = new FormData ();
+	} else {
+		formData = new FormData ();
+	}
+	formData.append ("objectId", recordId);
+	formData.append ("classAttrId", propertyId);
+	formData.append ("name", name);
+	formData.append ("file", file);
+	
+	let url = getUrl ();
+	
+	if (url [url.length - 1] == "/") {
+		url = url.substr (0, url.length - 1);
+	}
+	await fetch (`${url}/upload?sessionId=${sid}`, {
+		method: "POST",
+		body: formData
+	});
+};
+
 module.exports = {
 	request: isServer () ? serverRequest : clientRequest,
 	setSessionId,
 	getSessionId,
 	setUrl,
-	getUrl
+	getUrl,
+	upload
 };
 
