@@ -160,27 +160,21 @@ function upload ({recordId, propertyId, name, file}) {
 		formData.append ("objectId", recordId);
 		formData.append ("classAttrId", propertyId);
 		formData.append ("name", name);
-		formData.append ("file", file);
-		
+		formData.append ("file", file, {
+			filename: name,
+			knownLength: file.length
+		});
 		let url = getUrl ();
 		
 		if (url [url.length - 1] == "/") {
 			url = url.substr (0, url.length - 1);
 		}
 		if (isServer ()) {
-			let req = http.request ({
+			formData.submit ({
 				host,
 				port,
-				path: `${url}/upload?sessionId=${sid}`,
-				method: "POST",
-				headers: formData.getHeaders ()
-			});
-			formData.pipe (req);
-			
-			req.on ("error", function (err) {
-				reject (err);
-			});
-			req.on ("response", (res) => {
+				path: `${path}upload?sessionId=${sid}`,
+			}, function (err, res) {
 				resolve (res.statusCode);
 			});
 		} else {
