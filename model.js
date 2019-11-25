@@ -235,6 +235,8 @@ class _Rsc {
 					}
 					resolve ();
 				}, err => reject (err));
+			} else {
+				resolve ();
 			}
 		});
 	}
