@@ -85,6 +85,14 @@ function createRsc (rsc, attrs) {
 					delete map ["dict"][m.getPath ()];
 				}
 			}
+			if (rsc == "property") {
+				map ["model"][o.get ("model")].attrs [o.get ("code")] = o;
+				map ["model"][o.get ("model")].properties [o.get ("code")] = o;
+			}
+			if (rsc == "column") {
+				map ["query"][o.get ("query")].attrs [o.get ("code")] = o;
+				map ["query"][o.get ("query")].columns [o.get ("code")] = o;
+			}
 			resolve (o);
 		}, err => reject (err));
 	});
@@ -97,6 +105,22 @@ function removeRsc (rsc, id) {
 			_rsc: rsc,
 			id
 		}).then (() => {
+			if (rsc == "property") {
+				let o = map ["property"][id];
+				
+				if (o) {
+					delete map ["model"][o.get ("model")].attrs [o.get ("code")];
+					delete map ["model"][o.get ("model")].properties [o.get ("code")];
+				}
+			}
+			if (rsc == "column") {
+				let o = map ["column"][id];
+				
+				if (o) {
+					delete map ["query"][o.get ("query")].attrs [o.get ("code")];
+					delete map ["query"][o.get ("query")].columns [o.get ("code")];
+				}
+			}
 			delete map [rsc][id];
 			
 			let o = map [rsc][id];
