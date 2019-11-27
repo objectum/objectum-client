@@ -39,9 +39,13 @@ function load () {
 				data [rsc].forEach (row => {
 					let o = factory ({rsc, row});
 					
-					if (rsc == "model" || rsc == "query") {
+					if (rsc == "model") {
 						o.attrs = {};
 						o.properties = {};
+					}
+					if (rsc == "query") {
+						o.attrs = {};
+						o.columns = {};
 					}
 					map [rsc][o.get ("id")] = o;
 				});
@@ -70,7 +74,8 @@ function load () {
 						let oo = map ["query"][o.get ("query")];
 						
 						if (oo) {
-							oo.properties [o.get ("code")] = o;
+							oo.attrs [o.get ("code")] = o;
+							oo.columns [o.get ("code")] = o;
 							map ["column"][oo.getPath () + "." + o.get ("code")] = o;
 						}
 					});
