@@ -256,9 +256,9 @@ class _Rsc {
 							delete map ["dict"][m.get ("id")];
 							delete map ["dict"][m.getPath ()];
 						}
-						m.properties.forEach (property => {
-							me.set (property.get ("code"), data [property.get ("code")]);
-						});
+						for (let code in m.properties) {
+							me.set (code, data [code]);
+						}
 					}
 					resolve ();
 				}, err => reject (err));
