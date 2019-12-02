@@ -199,6 +199,20 @@ class _Rsc {
 				initValue (rscAttrs [rsc][i], row [i]);
 			}
 		}
+		if (rsc != "record") {
+			for (let i = 0; i < rscAttrs [rsc].length; i ++) {
+				let code = rscAttrs [rsc] [i];
+				
+				Object.defineProperty (me, code, {
+					get () {
+						return me.get (code);
+					},
+					set (value) {
+						me.set (code, value);
+					}
+				});
+			}
+		}
 	}
 	
 	get (a) {
@@ -296,13 +310,18 @@ class _Rsc {
 class _Record extends _Rsc {
 	constructor (opts) {
 		opts.rsc = "record";
+		
 		super (opts);
 		
 		let me = this;
 		
 		if (opts.data && opts.data ["_model"]) {
 			getRsc ("model", opts.data ["_model"]).then (m => {
-				for (let code in m.properties) {
+				let a = ["id", "_model", ...Object.keys (m.properties)];
+				
+				for (let i = 0; i < a.length; i ++) {
+					let code = a [i];
+					
 					Object.defineProperty (me, code, {
 						get () {
 							return me.get (code);
