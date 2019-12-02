@@ -248,7 +248,7 @@ class _Rsc {
 					_fn: "set",
 					_rsc: me._rsc,
 					id: me.get ("id")
-				}, attrs)).then (() => {
+				}, attrs)).then ((data) => {
 					if (me._rsc == "record") {
 						let m = map ["model"][me.get ("_model")];
 						
@@ -256,6 +256,9 @@ class _Rsc {
 							delete map ["dict"][m.get ("id")];
 							delete map ["dict"][m.getPath ()];
 						}
+						m.properties.forEach (property => {
+							me.set (property.get ("code"), data [property.get ("code")]);
+						});
 					}
 					resolve ();
 				}, err => reject (err));
