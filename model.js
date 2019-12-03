@@ -213,6 +213,14 @@ class _Rsc {
 				});
 			}
 		}
+		if (rsc == "model") {
+			me.attrs = {};
+			me.properties = {};
+		}
+		if (rsc == "query") {
+			me.attrs = {};
+			me.columns = {};
+		}
 	}
 	
 	get (a) {
