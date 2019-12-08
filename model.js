@@ -345,7 +345,7 @@ class _Record extends _Rsc {
 
 	getLabel () {
 		if (this.get ("name")) {
-			return `${this.get ("name")} (${this.get ("id")})`;
+			return `${this.get ("name")} (id: ${this.get ("id")})`;
 		} else {
 			return this.get ("id");
 		}
