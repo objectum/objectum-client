@@ -477,6 +477,6 @@ module.exports = {
 	createRsc,
 	removeRsc,
 	parseRecDates,
-	_Record,
+	Record: _Record,
 	register
 };

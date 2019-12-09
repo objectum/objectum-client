@@ -1,6 +1,6 @@
 "use strict";
 
-const {map, rscAttrs, factory, getRsc, createRsc, removeRsc, parseRecDates, _Record as Record, register} = require ("./model");
+const {map, rscAttrs, factory, getRsc, createRsc, removeRsc, parseRecDates, Record, register} = require ("./model");
 const {setSessionId, getSessionId, setUrl, getUrl, request, upload} = require ("./request");
 let userId = null, roleId = null, menuId = null;
 
