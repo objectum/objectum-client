@@ -431,13 +431,21 @@ class _Column extends _Rsc {
 	}
 };
 
+let registered = {};
+
 function factory (opts) {
 	let o;
 	let rsc = opts.rsc;
 	
 	switch (rsc) {
 		case "record":
-			o = new _Record (opts);
+			let m = map ["model"][opts._model];
+			
+			if (registered [m.getPath ()]) {
+				o = new registered [m.getPath ()] (opts);
+			} else {
+				o = new _Record (opts);
+			}
 			break;
 		case "model":
 			o = new _Model (opts);
@@ -457,6 +465,10 @@ function factory (opts) {
 	return o;
 };
 
+function register (path, Cls) {
+	registered [path] = Cls;
+};
+
 module.exports = {
 	map,
 	rscAttrs,
@@ -464,5 +476,7 @@ module.exports = {
 	getRsc,
 	createRsc,
 	removeRsc,
-	parseRecDates
+	parseRecDates,
+	_Record,
+	register
 };
