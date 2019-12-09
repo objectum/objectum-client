@@ -439,7 +439,7 @@ function factory (opts) {
 	
 	switch (rsc) {
 		case "record":
-			let m = map ["model"][opts._model];
+			let m = map ["model"][opts.data._model];
 			
 			if (registered [m.getPath ()]) {
 				o = new registered [m.getPath ()] (opts);
