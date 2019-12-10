@@ -442,7 +442,8 @@ function factory (opts) {
 			let m = map ["model"][opts.data._model];
 			
 			if (registered [m.getPath ()]) {
-				o = new registered [m.getPath ()] (opts);
+				let M = registered [m.getPath ()];
+				o = new M (opts);
 			} else {
 				o = new _Record (opts);
 			}
