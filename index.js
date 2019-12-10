@@ -1,6 +1,6 @@
 "use strict";
 
-const {map, rscAttrs, factory, getRsc, createRsc, removeRsc, parseRecDates, Record, register} = require ("./model");
+const {map, rscAttrs, factory, getRsc, createRsc, removeRsc, parseRecDates, Record, register, registered} = require ("./model");
 const {setSessionId, getSessionId, setUrl, getUrl, request, upload} = require ("./request");
 let userId = null, roleId = null, menuId = null;
 
@@ -396,5 +396,6 @@ module.exports = {
 	upload,
 	end,
 	Record,
-	register
+	register,
+	registered
 };
