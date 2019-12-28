@@ -40,7 +40,7 @@ function clientRequest (store, json) {
 		if (!store.url) {
 			return reject (new Error ("url not exists"));
 		}
-		fetch (`${store.url}${sid ? `?sid=${store.sid}` : ``}`, {
+		fetch (`${store.url}${store.sid ? `?sid=${store.sid}` : ``}`, {
 			headers: {
 				"Content-Type": "application/json; charset=utf-8"
 			},
@@ -70,7 +70,7 @@ function serverRequest (store, json) {
 		let req = store.http.request ({
 			host: store.host,
 			port: store.port,
-			path: `${store.path}${sid ? `?sid=${store.sid}` : ``}`,
+			path: `${store.path}${store.sid ? `?sid=${store.sid}` : ``}`,
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json; charset=utf-8",
