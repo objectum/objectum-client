@@ -2,30 +2,6 @@
 
 const {request} = require ("./request");
 
-let map = {
-	"sid": null,
-	"model": {},
-	"property": {},
-	"query": {},
-	"column": {},
-	"record": {},
-	"dict": {}
-};
-const rscAttrs = {
-	"model": [
-		"id", "parent", "name", "code", "description", "order", "format", "query", "opts", "start", "end", "schema", "record"
-	],
-	"property": [
-		"id", "model", "name", "code", "description", "order", "type", "notNull", "secure", "unique", "validFunc", "removeRule", "opts", "start", "end", "schema", "record"
-	],
-	"query": [
-		"id", "parent", "name", "code", "description", "order", "query", "layout", "iconCls", "system", "model", "opts", "start", "end", "schema", "record"
-	],
-	"column": [
-		"id", "query", "name", "code", "description", "order", "property", "area", "columnWidth", "opts", "start", "end", "schema", "record"
-	]
-};
-
 function parseRecDates (rec) {
 	for (let a in rec) {
 		let v = rec [a];
@@ -43,118 +19,12 @@ function parseRecDates (rec) {
 	}
 };
 
-function getRsc (rsc, id) {
-	return new Promise ((resolve, reject) => {
-		let o = map [rsc][id];
-		
-		if (o) {
-			resolve (o);
-		} else {
-			request ({
-				_fn: "get",
-				_rsc: rsc,
-				id
-			}).then (data => {
-				o = factory ({rsc, data});
-				
-				map [rsc][o.get ("id")] = o;
-				map [rsc][o.getPath ()] = o;
-				
-				resolve (o);
-			}, err => reject (err));
-		}
-	});
-};
-
-function createRsc (rsc, attrs) {
-	return new Promise ((resolve, reject) => {
-		request (Object.assign ({
-			_fn: "create",
-			_rsc: rsc
-		}, attrs)).then (data => {
-			let o = factory ({rsc, data});
-			
-			map [rsc][o.get ("id")] = o;
-			map [rsc][o.getPath ()] = o;
-			
-			if (rsc == "record" && attrs ["_model"]) {
-				let m = map ["model"][attrs ["_model"]];
-				
-				if (m.isDictionary ()) {
-					delete map ["dict"][m.get ("id")];
-					delete map ["dict"][m.getPath ()];
-				}
-			}
-			if (rsc == "property") {
-				map ["model"][o.get ("model")].attrs [o.get ("code")] = o;
-				map ["model"][o.get ("model")].properties [o.get ("code")] = o;
-			}
-			if (rsc == "column") {
-				map ["query"][o.get ("query")].attrs [o.get ("code")] = o;
-				map ["query"][o.get ("query")].columns [o.get ("code")] = o;
-			}
-			resolve (o);
-		}, err => reject (err));
-	});
-};
-
-function removeRsc (rsc, id) {
-	return new Promise ((resolve, reject) => {
-		request ({
-			_fn: "remove",
-			_rsc: rsc,
-			id
-		}).then (() => {
-			if (rsc == "property") {
-				let o = map ["property"][id];
-				
-				if (o) {
-					delete map ["model"][o.get ("model")].attrs [o.get ("code")];
-					delete map ["model"][o.get ("model")].properties [o.get ("code")];
-				}
-			}
-			if (rsc == "column") {
-				let o = map ["column"][id];
-				
-				if (o) {
-					delete map ["query"][o.get ("query")].attrs [o.get ("code")];
-					delete map ["query"][o.get ("query")].columns [o.get ("code")];
-				}
-			}
-			delete map [rsc][id];
-			
-			let o = map [rsc][id];
-			
-			if (o) {
-				delete map [rsc][o.getPath ()];
-
-/*
-todo: no loaded record
-				if (rsc == "record") {
-					let m = map ["model"][attrs ["_model"]];
-					
-					if (m && m.isDictionary ()) {
-						delete map ["dict"][m.get ("id")];
-						delete map ["dict"][m.getPath ()];
-					}
-				}
-*/
-			}
-			resolve ();
-		}, err => reject (err));
-	});
-};
-
 class _Rsc {
-	constructor ({rsc, row, data}) {
+	constructor ({rsc, row, data, store}) {
 		let me = this;
+
+		me.store = store;
 		
-/*
-		me._rsc = rsc;
-		me._data = {};
-		me._originalData = {};
-		me._removed = false;
-*/
 		Object.defineProperties (me, {
 			_rsc: {
 				value: rsc,
@@ -196,12 +66,12 @@ class _Rsc {
 		}
 		if (row) {
 			for (let i = 0; i < row.length; i ++) {
-				initValue (rscAttrs [rsc][i], row [i]);
+				initValue (me.store.rscAttrs [rsc][i], row [i]);
 			}
 		}
 		if (rsc != "record") {
-			for (let i = 0; i < rscAttrs [rsc].length; i ++) {
-				let code = rscAttrs [rsc] [i];
+			for (let i = 0; i < me.store.rscAttrs [rsc].length; i ++) {
+				let code = me.store.rscAttrs [rsc] [i];
 				
 				Object.defineProperty (me, code, {
 					get () {
@@ -246,11 +116,11 @@ class _Rsc {
 	}
 
 	sync () {
+		let me = this;
+		
 		return new Promise ((resolve, reject) => {
-			let me = this;
-			
 			if (me._removed) {
-				return removeRsc (me._rsc, me.get ("id")).then (() => resolve (), err => reject (err));
+				return me.store.removeRsc (me._rsc, me.get ("id")).then (() => resolve (), err => reject (err));
 			}
 			let attrs = {};
 			
@@ -272,11 +142,11 @@ class _Rsc {
 					id: me.get ("id")
 				}, attrs)).then ((data) => {
 					if (me._rsc == "record") {
-						let m = map ["model"][me.get ("_model")];
+						let m = me.store.map ["model"][me.get ("_model")];
 						
 						if (m && m.isDictionary ()) {
-							delete map ["dict"][m.get ("id")];
-							delete map ["dict"][m.getPath ()];
+							delete me.store.map ["dict"][m.get ("id")];
+							delete me.store.map ["dict"][m.getPath ()];
 						}
 						for (let code in m.properties) {
 							me.set (code, data [code]);
@@ -300,7 +170,7 @@ class _Rsc {
 		path.unshift (o.get ("code"));
 		
 		if (o.get ("parent")) {
-			return this.getPath (map [me._rsc][o.get ("parent")], path);
+			return me.getPath (me.store.map [me._rsc][o.get ("parent")], path);
 		} else {
 			return path.join (".");
 		}
@@ -324,7 +194,7 @@ class _Record extends _Rsc {
 		let me = this;
 		
 		if (opts.data && opts.data ["_model"]) {
-			getRsc ("model", opts.data ["_model"]).then (m => {
+			me.store.getRsc ("model", opts.data ["_model"]).then (m => {
 				let a = ["id", "_model", ...Object.keys (m.properties)];
 				
 				for (let i = 0; i < a.length; i ++) {
@@ -380,7 +250,7 @@ class _Property extends _Rsc {
 	getPath () {
 		let me = this;
 		
-		return `${map ["model"][me.get ("model")].getPath ()}.${me.get ("code")}`;
+		return `${me.store.map ["model"][me.get ("model")].getPath ()}.${me.get ("code")}`;
 	}
 	
 	getField () {
@@ -423,7 +293,7 @@ class _Column extends _Rsc {
 	getPath () {
 		let me = this;
 		
-		return `${map ["query"][me.get ("query")].getPath ()}.${me.get ("code")}`;
+		return `${me.store.map ["query"][me.get ("query")].getPath ()}.${me.get ("code")}`;
 	}
 	
 	getLabel () {
@@ -431,18 +301,16 @@ class _Column extends _Rsc {
 	}
 };
 
-let registered = {};
-
 function factory (opts) {
 	let o;
 	let rsc = opts.rsc;
 	
 	switch (rsc) {
 		case "record":
-			let m = map ["model"][opts.data._model];
+			let m = opts.store.map ["model"][opts.data._model];
 			
-			if (registered [m.getPath ()]) {
-				let M = registered [m.getPath ()];
+			if (opts.store.registered [m.getPath ()]) {
+				let M = opts.store.registered [m.getPath ()];
 				o = new M (opts);
 			} else {
 				o = new _Record (opts);
@@ -466,19 +334,8 @@ function factory (opts) {
 	return o;
 };
 
-function register (path, Cls) {
-	registered [path] = Cls;
-};
-
 module.exports = {
-	map,
-	rscAttrs,
 	factory,
-	getRsc,
-	createRsc,
-	removeRsc,
 	parseRecDates,
 	Record: _Record,
-	register,
-	registered
 };

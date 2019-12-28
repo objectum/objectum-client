@@ -1,39 +1,11 @@
 "use strict";
 
-let sid, url, http, host, port, path;
-
 function isServer () {
 	if (typeof window !== "undefined") {
 		return false;
 	} else {
 		return true;
 	}
-};
-
-function setSessionId (_sid) {
-	sid = _sid;
-};
-
-function getSessionId () {
-	return sid;
-};
-
-function setUrl (_url) {
-	if (isServer ()) {
-		let opts = require ("url").parse (_url);
-		
-		url = _url;
-		http = opts.protocol == "https:" ? require ("https") : require ("http");
-		host = opts.hostname;
-		port = opts.port || (opts.protocol == "https:" ? 443 : 80);
-		path = opts.path;
-	} else {
-		url = _url;
-	}
-};
-
-function getUrl () {
-	return url;
 };
 
 function parseDates (rec) {
@@ -63,12 +35,12 @@ function updateDates (data) {
 	}
 };
 
-function clientRequest (json) {
+function clientRequest (store, json) {
 	return new Promise ((resolve, reject) => {
-		if (! url) {
+		if (!store.url) {
 			return reject (new Error ("url not exists"));
 		}
-		fetch (`${url}${sid ? `?sid=${sid}` : ``}`, {
+		fetch (`${store.url}${sid ? `?sid=${store.sid}` : ``}`, {
 			headers: {
 				"Content-Type": "application/json; charset=utf-8"
 			},
@@ -88,17 +60,17 @@ function clientRequest (json) {
 	});
 };
 
-function serverRequest (json) {
+function serverRequest (store, json) {
 	return new Promise ((resolve, reject) => {
 		if (! url) {
 			return reject (new Error ("url not exists"));
 		}
 		let data = JSON.stringify (json);
 		let resData, reqErr;
-		let req = http.request ({
-			host,
-			port,
-			path: `${path}${sid ? `?sid=${sid}` : ``}`,
+		let req = store.http.request ({
+			host: store.host,
+			port: store.port,
+			path: `${store.path}${sid ? `?sid=${store.sid}` : ``}`,
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json; charset=utf-8",
@@ -146,54 +118,8 @@ function serverRequest (json) {
 	});
 };
 
-function upload ({recordId, propertyId, name, file}) {
-	return new Promise ((resolve, reject) => {
-		let formData;
-		
-		if (isServer ()) {
-			let FormData = require ("form-data");
-			
-			formData = new FormData ();
-		} else {
-			formData = new FormData ();
-		}
-		formData.append ("objectId", recordId);
-		formData.append ("classAttrId", propertyId);
-		formData.append ("name", name);
-		formData.append ("file", file, {
-			filename: name,
-			knownLength: file.length
-		});
-		let url = getUrl ();
-		
-		if (url [url.length - 1] == "/") {
-			url = url.substr (0, url.length - 1);
-		}
-		if (isServer ()) {
-			formData.submit ({
-				host,
-				port,
-				path: `${path}upload?sessionId=${sid}`,
-			}, function (err, res) {
-				resolve (res.statusCode);
-			});
-		} else {
-			fetch (`${url}/upload?sessionId=${sid}`, {
-				method: "POST",
-				body: formData
-			}).then (() => {
-				resolve ();
-			});
-		}
-	});
-};
-
 module.exports = {
 	request: isServer () ? serverRequest : clientRequest,
-	setSessionId,
-	getSessionId,
-	setUrl,
-	getUrl,
-	upload
+	isServer
 };
 
