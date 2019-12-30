@@ -631,5 +631,6 @@ class Store {
 module.exports = {
 	Store,
 	factory,
-	Record
+	Record,
+	isServer
 };

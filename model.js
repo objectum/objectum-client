@@ -136,7 +136,7 @@ class _Rsc {
 				}
 			}
 			if (Object.keys (attrs).length) {
-				request (Object.assign ({
+				request (me.store, Object.assign ({
 					_fn: "set",
 					_rsc: me._rsc,
 					id: me.get ("id")
