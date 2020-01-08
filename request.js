@@ -62,7 +62,7 @@ function clientRequest (store, json) {
 
 function serverRequest (store, json) {
 	return new Promise ((resolve, reject) => {
-		if (! url) {
+		if (!store.url) {
 			return reject (new Error ("url not exists"));
 		}
 		let data = JSON.stringify (json);
