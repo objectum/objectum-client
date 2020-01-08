@@ -226,9 +226,13 @@ class _Record extends _Rsc {
 		
 		return new Promise ((resolve, reject) => {
 			request (me.store, Object.assign ({
-				_model: me._model,
+				_model: me.store.getModel (me._model).getPath (),
 				id: me.get ("id")
 			}, opts)).then (data => {
+				try {
+					data = JSON.parse (data);
+				} catch (err) {
+				}
 				resolve (data);
 			}, err => reject (err));
 		});
