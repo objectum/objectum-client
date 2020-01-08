@@ -626,6 +626,20 @@ class Store {
 	register (path, Cls) {
 		this.registered [path] = Cls;
 	}
+	
+	request (opts) {
+		let me = this;
+		
+		return new Promise ((resolve, reject) => {
+			request (me, opts).then (data => {
+				try {
+					data = JSON.parse (data);
+				} catch (err) {
+				}
+				resolve (data);
+			}, err => reject (err));
+		});
+	}
 };
 
 module.exports = {
