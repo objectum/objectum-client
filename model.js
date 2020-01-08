@@ -220,6 +220,19 @@ class _Record extends _Rsc {
 			return this.get ("id");
 		}
 	}
+	
+	server (opts) {
+		let me = this;
+		
+		return new Promise ((resolve, reject) => {
+			request (me.store, Object.assign ({
+				_model: me._model,
+				id: me.get ("id")
+			}, opts)).then (data => {
+				resolve (data);
+			}, err => reject (err));
+		});
+	}
 };
 
 class _Model extends _Rsc {
