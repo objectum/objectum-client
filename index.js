@@ -199,8 +199,8 @@ class Store {
 				}).then (data => {
 					o = factory ({rsc, data, store: me});
 					
-					me.map [rsc][o.get ("id")] = o;
-					me.map [rsc][o.getPath ()] = o;
+					//me.map [rsc][o.get ("id")] = o;
+					//me.map [rsc][o.getPath ()] = o;
 					
 					resolve (o);
 				}, err => reject (err));
@@ -517,28 +517,6 @@ class Store {
 		});
 	}
 	
-	getRecords (opts) {
-		/*
-			return new Promise ((resolve, reject) => {
-				request (Object.assign ({
-					"_fn": "getRecords"
-				}, opts)).then (result => {
-					result.recs = result.recs.map (rec => {
-						let newRec = {};
-						
-						result.cols.forEach ((col, i) => {
-							newRec [col.code] = rec [i];
-						});
-						parseRecDates (newRec);
-						
-						return newRec;
-					});
-					resolve (result);
-				}, err => reject (err));
-			});
-		*/
-	}
-	
 	getUserId () {
 		return this.userId;
 	}
@@ -637,6 +615,37 @@ class Store {
 				} catch (err) {
 				}
 				resolve (data);
+			}, err => reject (err));
+		});
+	}
+	
+	getRecords (opts) {
+		let me = this;
+		
+		if (!opts.model) {
+			throw new Error ("model not exist");
+		}
+		if (!me.map ["model"][opts.model]) {
+			throw new Error (`unknown model: ${opts.model}`);
+		}
+		return new Promise ((resolve, reject) => {
+			request (me, Object.assign ({
+				"_fn": "getData"
+			}, opts)).then (result => {
+				let recs = result.recs.map (rec => {
+					let newRec = {};
+					
+					result.cols.forEach ((col, i) => {
+						newRec [col.code] = rec [i];
+					});
+					parseRecDates (newRec);
+					
+					return newRec;
+				});
+				let records = recs.map (data => {
+					return factory ({rsc: "record", data, store: me});
+				});
+				resolve (records);
 			}, err => reject (err));
 		});
 	}

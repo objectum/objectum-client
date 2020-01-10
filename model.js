@@ -348,6 +348,9 @@ function factory (opts) {
 		default:
 			throw new Error (`factory: unknown resource: ${rsc}`);
 	}
+	opts.store.map [rsc][o.id] = o;
+	opts.store.map [rsc][o.getPath ()] = o;
+	
 	return o;
 };
 
