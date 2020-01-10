@@ -643,6 +643,8 @@ class Store {
 					return newRec;
 				});
 				let records = recs.map (data => {
+					data._model = opts.model;
+					
 					return factory ({rsc: "record", data, store: me});
 				});
 				resolve (records);
