@@ -175,8 +175,9 @@ class Store {
 					me.userId = data.userId;
 					me.roleId = data.roleId;
 					me.menuId = data.menuId;
+					me.code = data.code;
 					
-					resolve (data.sessionId, data.userId, data.roleId, data.menuId);
+					resolve (data.sessionId, data.userId, data.roleId, data.menuId, data.code);
 					me.callListeners ("connect", data);
 				}, err => reject (err));
 			}, err => reject (err));
