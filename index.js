@@ -29,6 +29,7 @@ class Store {
 			"record": {},
 			"dict": {}
 		};
+		me.dict = {};
 		me.rscAttrs = {
 			"model": [
 				"id", "parent", "name", "code", "description", "order", "format", "query", "opts", "start", "end", "schema", "record"
@@ -228,6 +229,8 @@ class Store {
 					if (m.isDictionary ()) {
 						delete me.map ["dict"][m.get ("id")];
 						delete me.map ["dict"][m.getPath ()];
+						delete me.dict [m.get ("id")];
+						delete me.dict [m.getPath ()];
 					}
 				}
 				if (rsc == "property") {
@@ -498,6 +501,9 @@ class Store {
 				"model": id
 			}).then (recs => {
 				me.map ["dict"][id] = recs;
+				me.dict [id] = {};
+				
+				recs.forEach (rec => me.dict [id][rec.id] = rec);
 				
 				resolve (recs);
 			}, err => reject (err));
