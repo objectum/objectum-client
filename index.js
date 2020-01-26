@@ -173,6 +173,7 @@ class Store {
 				me.load ().then (() => {
 					me.informer ();
 					
+					me.username = username;
 					me.userId = data.userId;
 					me.roleId = data.roleId;
 					me.menuId = data.menuId;
