@@ -1,7 +1,5 @@
-"use strict";
-
-const {factory, parseRecDates, Record} = require ("./model");
-const {request, isServer} = require ("./request");
+import {factory, parseRecDates, Record} from "./model.js";
+import {request, isServer} from "./request.js";
 
 class Store {
 	constructor () {
@@ -661,7 +659,13 @@ class Store {
 	}
 };
 
-module.exports = {
+export {
+	Store,
+	factory,
+	Record,
+	isServer
+};
+export default {
 	Store,
 	factory,
 	Record,

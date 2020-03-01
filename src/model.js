@@ -1,6 +1,4 @@
-"use strict";
-
-const {request} = require ("./request");
+import {request} from "./request.js";
 
 function parseRecDates (rec) {
 	for (let a in rec) {
@@ -367,8 +365,10 @@ function factory (opts) {
 	return o;
 };
 
-module.exports = {
+const Record = _Record;
+
+export {
 	factory,
 	parseRecDates,
-	Record: _Record,
+	Record
 };

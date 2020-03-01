@@ -1,5 +1,3 @@
-"use strict";
-
 function isServer () {
 	if (typeof window !== "undefined") {
 		return false;
@@ -118,8 +116,10 @@ function serverRequest (store, json) {
 	});
 };
 
-module.exports = {
-	request: isServer () ? serverRequest : clientRequest,
+const request = isServer () ? serverRequest : clientRequest;
+
+export {
+	request,
 	isServer
 };
 
