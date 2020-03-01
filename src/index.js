@@ -611,6 +611,10 @@ class Store {
 		this.registered [path] = Cls;
 	}
 	
+	getRegistered (path) {
+		return this.registered [path];
+	}
+	
 	request (opts) {
 		let me = this;
 		
@@ -665,6 +669,7 @@ export {
 	Record,
 	isServer
 };
+
 export default {
 	Store,
 	factory,
