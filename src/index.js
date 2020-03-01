@@ -488,6 +488,28 @@ class Store {
 		});
 	}
 	
+	getRecs (opts) {
+		let me = this;
+		
+		return new Promise ((resolve, reject) => {
+			request (me, Object.assign ({
+				"_fn": "getData"
+			}, opts)).then (result => {
+				result.recs = result.recs.map (rec => {
+					let newRec = {};
+					
+					result.cols.forEach ((col, i) => {
+						newRec [col.code] = rec [i];
+					});
+					parseRecDates (newRec);
+					
+					return newRec;
+				});
+				resolve (result.recs);
+			}, err => reject (err));
+		});
+	}
+	
 	getDict (id) {
 		let me = this;
 		
