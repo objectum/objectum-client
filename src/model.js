@@ -310,6 +310,25 @@ class _Query extends _Rsc {
 		opts.rsc = "query";
 		super (opts);
 	}
+	
+	getModel () {
+		let mid;
+		let query = this.query;
+		
+		if (query) {
+			let tokens = query.split ("from");
+			
+			if (tokens.length > 1) {
+				tokens = tokens [1].split ('{"model"');
+				
+				let token = tokens [1].substr (0, tokens [1].indexOf ("}"));
+				let o = JSON.parse (`{"model"${token}}`);
+				
+				mid = o.model;
+			}
+		}
+		return mid;
+	}
 };
 
 class _Column extends _Rsc {
