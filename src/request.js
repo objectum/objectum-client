@@ -116,10 +116,27 @@ function serverRequest (store, json) {
 	});
 };
 
+function execute (fn, opts) {
+	return new Promise ((resolve, reject) => {
+		let promise = fn (opts);
+		
+		if (promise && promise.then) {
+			promise.then (result => {
+				resolve (result);
+			}).catch (err => {
+				reject (err);
+			});
+		} else {
+			resolve (promise);
+		}
+	});
+};
+
 const request = isServer () ? serverRequest : clientRequest;
 
 export {
 	request,
-	isServer
+	isServer,
+	execute
 };
 

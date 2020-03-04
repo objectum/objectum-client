@@ -215,6 +215,7 @@ class _Record extends _Rsc {
 
 	getLabel () {
 		let me = this;
+/*
 		let m = me.store.map ["model"][me._model];
 		
 		if (m && m.format) {
@@ -229,6 +230,10 @@ class _Record extends _Rsc {
 			return `${this.get ("name")} (id: ${this.get ("id")})`;
 		} else {
 			return this.get ("id");
+		}
+*/
+		if (me._label) {
+			return me._label ();
 		}
 	}
 	

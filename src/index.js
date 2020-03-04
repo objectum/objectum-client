@@ -1,5 +1,5 @@
 import {factory, parseRecDates, Record} from "./model.js";
-import {request, isServer} from "./request.js";
+import {request, isServer, execute} from "./request.js";
 
 class Store {
 	constructor () {
@@ -689,12 +689,14 @@ export {
 	Store,
 	factory,
 	Record,
-	isServer
+	isServer,
+	execute
 };
 
 export default {
 	Store,
 	factory,
 	Record,
-	isServer
+	isServer,
+	execute
 };
