@@ -234,6 +234,10 @@ class _Record extends _Rsc {
 */
 		if (me._label) {
 			return me._label ();
+		} else if (me.get ("name")) {
+			return `${me.get ("name")} (id: ${me.get ("id")})`;
+		} else {
+			return this.get ("id");
 		}
 	}
 	
