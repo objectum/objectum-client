@@ -18,16 +18,6 @@ class Store {
 		me.registered = {};
 		me.informerId = null;
 		me.revision = 0;
-		me.map = {
-			"sid": null,
-			"model": {},
-			"property": {},
-			"query": {},
-			"column": {},
-			"record": {},
-			"dict": {}
-		};
-		me.dict = {};
 		me.rscAttrs = {
 			"model": [
 				"id", "parent", "name", "code", "description", "order", "format", "query", "opts", "start", "end", "schema", "record"
@@ -42,6 +32,23 @@ class Store {
 				"id", "query", "name", "code", "description", "order", "property", "area", "columnWidth", "opts", "start", "end", "schema", "record"
 			]
 		};
+		me.initMap ();
+		me.originalMap = me.map;
+	}
+
+	initMap () {
+		let me = this;
+		
+		me.map = {
+			"sid": null,
+			"model": {},
+			"property": {},
+			"query": {},
+			"column": {},
+			"record": {},
+			"dict": {}
+		};
+		me.dict = {};
 	}
 	
 	addListener (event, fn) {
@@ -301,7 +308,13 @@ class Store {
 			request (me, {
 				"_fn": "startTransaction",
 				description
-			}).then (() => resolve (), err => reject (err));
+			}).then (() => {
+				if (me.map != me.originalMap) {
+					me.savedMap = me.map;
+					me.initMap ();
+				}
+				resolve ();
+			}, err => reject (err));
 		});
 	};
 	
@@ -311,7 +324,13 @@ class Store {
 		return new Promise ((resolve, reject) => {
 			request (me, {
 				"_fn": "commitTransaction"
-			}).then (() => resolve (), err => reject (err));
+			}).then (() => {
+				if (me.savedMap) {
+					me.map = me.savedMap;
+					me.savedMap = null
+				}
+				resolve ();
+			}, err => reject (err));
 		});
 	}
 	
@@ -321,7 +340,13 @@ class Store {
 		return new Promise ((resolve, reject) => {
 			request (me, {
 				"_fn": "rollbackTransaction"
-			}).then (() => resolve (), err => reject (err));
+			}).then (() => {
+				if (me.savedMap) {
+					me.map = me.savedMap;
+					me.savedMap = null
+				}
+				resolve ();
+			}, err => reject (err));
 		});
 	}
 	
