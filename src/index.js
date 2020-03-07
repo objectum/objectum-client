@@ -20,7 +20,7 @@ class Store {
 		me.revision = 0;
 		me.rscAttrs = {
 			"model": [
-				"id", "parent", "name", "code", "description", "order", "format", "query", "opts", "start", "end", "schema", "record"
+				"id", "parent", "name", "code", "description", "order", "unlogged", "query", "opts", "start", "end", "schema", "record"
 			],
 			"property": [
 				"id", "model", "name", "code", "description", "order", "type", "notNull", "secure", "unique", "validFunc", "removeRule", "opts", "start", "end", "schema", "record"

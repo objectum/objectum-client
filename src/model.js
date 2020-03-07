@@ -215,23 +215,7 @@ class _Record extends _Rsc {
 
 	getLabel () {
 		let me = this;
-/*
-		let m = me.store.map ["model"][me._model];
-		
-		if (m && m.format) {
-			try {
-				let fn = eval ("(" + m.format + ")");
-				
-				return fn.call (me);
-			} catch (err) {
-				return err.message;
-			}
-		} else if (this.get ("name")) {
-			return `${this.get ("name")} (id: ${this.get ("id")})`;
-		} else {
-			return this.get ("id");
-		}
-*/
+
 		if (me._label) {
 			return me._label ();
 		} else if (me.get ("name")) {
