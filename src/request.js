@@ -53,6 +53,8 @@ function clientRequest (store, json) {
 				updateDates (data);
 				
 				resolve (data);
+				
+				store.callListeners ("api", json);
 			}, err => reject (err));
 		}, err => reject (err));
 	});
@@ -101,6 +103,8 @@ function serverRequest (store, json) {
 								console.log ("response:", JSON.stringify (resData, null, "\t"));
 							}
 							resolve (resData);
+							
+							store.callListeners ("api", json);
 						}
 					} catch (err) {
 						reject (err);

@@ -74,10 +74,10 @@ class Store {
 	callListeners (event, opts) {
 		let me = this;
 		
-		me.listeners [event] = me.listeners [event] || [];
-		
-		for (let i = 0; i < me.listeners [event].length; i ++) {
-			me.listeners [event][i] (opts);
+		if (me.listeners [event]) {
+			for (let i = 0; i < me.listeners [event].length; i ++) {
+				me.listeners [event][i] (opts);
+			}
 		}
 	}
 	
