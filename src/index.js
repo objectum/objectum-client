@@ -44,15 +44,17 @@ class Store {
 						let m = me.getModel (record._model);
 						let id = m.getPath ();
 						
-						for (let i = 0; i < me.map ["dict"][id].length; i ++) {
-							let record2 = me.map ["dict"][id][i];
-							
-							if (!record2 || record2.id == record.id) {
-								me.map ["dict"][id].splice (i, 1);
-								break;
+						if (me.dict [id]) {
+							for (let i = 0; i < me.map ["dict"][id].length; i ++) {
+								let record2 = me.map ["dict"][id][i];
+								
+								if (!record2 || record2.id == record.id) {
+									me.map ["dict"][id].splice (i, 1);
+									break;
+								}
 							}
+							delete me.dict [id][record.id];
 						}
-						delete me.dict [id][record.id];
 					}
 				}
 			}
