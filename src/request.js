@@ -38,6 +38,8 @@ function clientRequest (store, json) {
 		if (!store.url) {
 			return reject (new Error ("url not exists"));
 		}
+		store.callListeners ("before-request", {request: json});
+		
 		fetch (`${store.url}${store.sid ? `?sid=${store.sid}` : ``}`, {
 			headers: {
 				"Content-Type": "application/json; charset=utf-8"
@@ -54,7 +56,7 @@ function clientRequest (store, json) {
 				
 				resolve (data);
 				
-				store.callListeners ("api", {request: json, response: data});
+				store.callListeners ("after-request", {request: json, response: data});
 			}, err => reject (err));
 		}, err => reject (err));
 	});
@@ -67,6 +69,9 @@ function serverRequest (store, json) {
 		}
 		let data = JSON.stringify (json);
 		let resData, reqErr;
+
+		store.callListeners ("before-request", {request: json});
+		
 		let req = store.http.request ({
 			host: store.host,
 			port: store.port,
@@ -104,7 +109,7 @@ function serverRequest (store, json) {
 							}
 							resolve (resData);
 							
-							store.callListeners ("api", {request: json, response: resData});
+							store.callListeners ("after-request", {request: json, response: resData});
 						}
 					} catch (err) {
 						reject (err);

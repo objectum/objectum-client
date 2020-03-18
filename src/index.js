@@ -33,8 +33,48 @@ class Store {
 			]
 		};
 		me.initMap ();
-		me.dictUpdater = me.dictUpdater.bind (me);
-		me.addListener ("api", me.dictUpdater);
+		me.addListener ("before-request", opts => {
+			let req = opts.request;
+			
+			if (req._rsc == "record") {
+				if (req._fn == "remove") {
+					let record = me.map ["record"][req.id];
+					
+					if (record) {
+						let m = me.getModel (record._model);
+						let id = m.getPath ();
+						
+						for (let i = 0; i < me.map ["dict"][id].length; i ++) {
+							let record2 = me.map ["dict"][id][i];
+							
+							if (!record2 || record2.id == record.id) {
+								me.map ["dict"][id].splice (i, 1);
+								break;
+							}
+						}
+						delete me.dict [id][record.id];
+					}
+				}
+			}
+		});
+		me.addListener ("after-request", opts => {
+			let req = opts.request;
+			let res = opts.response;
+			
+			if (req._rsc == "record") {
+				if (req._fn == "create") {
+					let m = me.getModel (req._model);
+					let id = m.getPath ();
+					
+					if (me.dict [id]) {
+						me.getRecord (res.id, record => {
+							me.map ["dict"][id] = [record, ...me.map ["dict"][id]];
+							me.dict [id][record.id] = record;
+						});
+					}
+				}
+			}
+		});
 		me.originalMap = me.map;
 	}
 
@@ -51,37 +91,6 @@ class Store {
 			"dict": {}
 		};
 		me.dict = {};
-	}
-	
-	dictUpdater (opts) {
-		let me = this;
-		let req = opts.request;
-		let res = opts.response;
-		
-		if (req._rsc == "record") {
-			let m = me.getModel (req._model);
-			let id = m.getPath ();
-			
-			if (me.dict [id]) {
-				if (req._fn == "create") {
-					me.getRecord (res.id, record => {
-						me.map ["dict"][id] = [record, ...me.map ["dict"][id]];
-						me.dict [id][record.id] = record;
-					});
-				}
-				if (req._fn == "remove") {
-					for (let i = 0; i < me.map ["dict"][id].length; i ++) {
-						let record = me.map ["dict"][id][i];
-						
-						if (!record || record.id == req.id) {
-							me.map ["dict"][id].splice (i, 1);
-							break;
-						}
-					}
-					delete me.dict [id][record.id];
-				}
-			}
-		}
 	}
 	
 	addListener (event, fn) {
