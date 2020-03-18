@@ -54,7 +54,7 @@ function clientRequest (store, json) {
 				
 				resolve (data);
 				
-				store.callListeners ("api", json);
+				store.callListeners ("api", {request: json, response: data});
 			}, err => reject (err));
 		}, err => reject (err));
 	});
@@ -104,7 +104,7 @@ function serverRequest (store, json) {
 							}
 							resolve (resData);
 							
-							store.callListeners ("api", json);
+							store.callListeners ("api", {request: json, response: resData});
 						}
 					} catch (err) {
 						reject (err);

@@ -33,6 +33,8 @@ class Store {
 			]
 		};
 		me.initMap ();
+		me.dictUpdater = me.dictUpdater.bind (me);
+		me.addListener ("api", me.dictUpdater);
 		me.originalMap = me.map;
 	}
 
@@ -49,6 +51,37 @@ class Store {
 			"dict": {}
 		};
 		me.dict = {};
+	}
+	
+	dictUpdater (opts) {
+		let me = this;
+		let req = opts.request;
+		let res = opts.response;
+		
+		if (req._rsc == "record") {
+			let m = me.getModel (req._model);
+			let id = m.getPath ();
+			
+			if (me.dict [id]) {
+				if (req._fn == "create") {
+					me.getRecord (res.id, record => {
+						me.map ["dict"][id] = [record, ...me.map ["dict"][id]];
+						me.dict [id][record.id] = record;
+					});
+				}
+				if (req._fn == "remove") {
+					for (let i = 0; i < me.map ["dict"][id].length; i ++) {
+						let record = me.map ["dict"][id][i];
+						
+						if (!record || record.id == req.id) {
+							me.map ["dict"][id].splice (i, 1);
+							break;
+						}
+					}
+					delete me.dict [id][record.id];
+				}
+			}
+		}
 	}
 	
 	addListener (event, fn) {
@@ -538,6 +571,7 @@ class Store {
 	getDict (id) {
 		let me = this;
 		
+/*
 		return new Promise ((resolve, reject) => {
 			if (me.map ["dict"][id]) {
 				return resolve (me.map ["dict"][id]);
@@ -552,6 +586,20 @@ class Store {
 				recs.forEach (rec => me.dict [id][rec.id] = rec);
 				
 				resolve (recs);
+			}, err => reject (err));
+		});
+*/
+		return new Promise ((resolve, reject) => {
+			if (me.map ["dict"][id]) {
+				return resolve (me.map ["dict"][id]);
+			}
+			me.getRecords ({model: id}).then (records => {
+				me.map ["dict"][id] = records;
+				me.dict [id] = {};
+				
+				records.forEach (record => me.dict [id][record.id] = record);
+				
+				resolve (records);
 			}, err => reject (err));
 		});
 	}
@@ -700,9 +748,17 @@ class Store {
 					return newRec;
 				});
 				let records = recs.map (data => {
-					data._model = opts.model;
-					
-					return factory ({rsc: "record", data, store: me});
+					if (me.map ["record"][data.id]) {
+						return me.map ["record"][data.id];
+					} else {
+						data._model = opts.model;
+						
+						let record = factory ({rsc: "record", data, store: me});
+						
+						me.map ["record"][data.id] = record;
+						
+						return record;
+					}
 				});
 				resolve (records);
 			}, err => reject (err));
