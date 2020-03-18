@@ -69,7 +69,7 @@ class Store {
 					let id = m.getPath ();
 					
 					if (me.dict [id]) {
-						me.getRecord (res.id, record => {
+						me.getRecord (res.id).then (record => {
 							me.map ["dict"][id] = [record, ...me.map ["dict"][id]];
 							me.dict [id][record.id] = record;
 						});
