@@ -40,6 +40,9 @@ function clientRequest (store, json) {
 		}
 		store.callListeners ("before-request", {request: json});
 		
+		if (json._trace) {
+			json._trace = [new Date ().getTime ()];
+		}
 		fetch (`${store.url}${store.sid ? `?sid=${store.sid}` : ``}`, {
 			headers: {
 				"Content-Type": "application/json; charset=utf-8"
@@ -54,6 +57,9 @@ function clientRequest (store, json) {
 				}
 				updateDates (data);
 				
+				if (data._trace) {
+					data._trace.push (new Date ().getTime ());
+				}
 				resolve (data);
 				
 				store.callListeners ("after-request", {request: json, response: data});
@@ -72,6 +78,9 @@ function serverRequest (store, json) {
 
 		store.callListeners ("before-request", {request: json});
 		
+		if (json._trace) {
+			json._trace = [new Date ().getTime ()];
+		}
 		let req = store.http.request ({
 			host: store.host,
 			port: store.port,
@@ -106,6 +115,9 @@ function serverRequest (store, json) {
 							if (process.env.OBJECTUM_DEBUG && json.fn != "getAll") {
 								console.log ("request:", JSON.stringify (json, null, "\t"));
 								console.log ("response:", JSON.stringify (resData, null, "\t"));
+							}
+							if (resData._trace) {
+								resData._trace.push (new Date ().getTime ());
 							}
 							resolve (resData);
 							
