@@ -732,6 +732,9 @@ class Store {
 				} catch (err) {
 				}
 */
+				if (data && data.result) {
+					data = data.result;
+				}
 				resolve (data);
 			}, err => reject (err));
 		});
