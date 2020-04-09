@@ -726,10 +726,12 @@ class Store {
 		
 		return new Promise ((resolve, reject) => {
 			request (me, opts).then (data => {
+/*
 				try {
 					data = JSON.parse (data);
 				} catch (err) {
 				}
+*/
 				resolve (data);
 			}, err => reject (err));
 		});
