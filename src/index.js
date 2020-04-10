@@ -77,7 +77,7 @@ class Store {
 				}
 			}
 		});
-		me.originalMap = me.map;
+		me.originalRecordMap = me.map.record;
 	}
 
 	initMap () {
@@ -353,9 +353,9 @@ class Store {
 				"_fn": "startTransaction",
 				description
 			}).then (() => {
-				if (me.map != me.originalMap) {
-					me.savedMap = me.map;
-					me.initMap ();
+				if (me.map.record != me.originalRecordMap) {
+					me.savedRecordMap = me.map.record;
+					me.map.record = {};
 				}
 				resolve ();
 			}, err => reject (err));
@@ -369,9 +369,9 @@ class Store {
 			request (me, {
 				"_fn": "commitTransaction"
 			}).then (() => {
-				if (me.savedMap) {
-					me.map = me.savedMap;
-					me.savedMap = null
+				if (me.savedRecordMap) {
+					me.map.record = me.savedRecordMap;
+					me.savedRecordMap = null
 				}
 				resolve ();
 			}, err => reject (err));
@@ -385,9 +385,9 @@ class Store {
 			request (me, {
 				"_fn": "rollbackTransaction"
 			}).then (() => {
-				if (me.savedMap) {
-					me.map = me.savedMap;
-					me.savedMap = null
+				if (me.savedRecordMap) {
+					me.map.record = me.savedRecordMap;
+					me.savedRecordMap = null
 				}
 				resolve ();
 			}, err => reject (err));
