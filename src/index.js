@@ -228,7 +228,7 @@ class Store {
 			me.progress [me.sid][progressId] = progress;
 			
 			request (me, {
-				model, method, id
+				_model: model, _method: method, id
 			}).then (data => {
 				if (data && data.result) {
 					data = data.result;
