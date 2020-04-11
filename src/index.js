@@ -194,7 +194,7 @@ class Store {
 				me.revision = data.revision;
 				data.records.forEach (id => delete me.map ["record"][id]);
 				
-				me.informerId = setTimeout (() => me.informer (), 5000);
+				me.informerId = setTimeout (() => me.informer (), 500);
 				resolve ();
 			}, err => reject (err));
 		});
