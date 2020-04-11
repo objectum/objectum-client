@@ -78,6 +78,7 @@ class Store {
 			}
 		});
 		me.originalRecordMap = me.map.record;
+		me.progress = {};
 	}
 
 	initMap () {
@@ -194,9 +195,58 @@ class Store {
 				me.revision = data.revision;
 				data.records.forEach (id => delete me.map ["record"][id]);
 				
+				if (data.progress && me.progress [me.sid]) {
+					for (let progressId in data.progress) {
+						if (me.progress [me.sid][progressId]) {
+							me.progress [me.sid][progressId] (data.progress [progressId]);
+						}
+					}
+				}
 				me.informerId = setTimeout (() => me.informer (), 500);
 				resolve ();
 			}, err => reject (err));
+		});
+	}
+	
+	request (opts) {
+		let me = this;
+		
+		return new Promise ((resolve, reject) => {
+			request (me, opts).then (data => {
+				resolve (data);
+			}, err => reject (err));
+		});
+	}
+	
+	remote ({model, method, id, progress}) {
+		let me = this;
+		
+		return new Promise ((resolve, reject) => {
+			let progressId = `${id ? id : model}-${method}`;
+			
+			me.progress [me.sid] = me.progress [me.sid] || {};
+			me.progress [me.sid][progressId] = progress;
+			
+			request (me, {
+				model, method, id
+			}).then (data => {
+				if (data && data.result) {
+					data = data.result;
+				}
+				delete me.progress [me.sid][progressId];
+
+				if (!Object.keys (me.progress [me.sid]).length) {
+					delete me.progress [me.sid];
+				}
+				resolve (data);
+			}, err => {
+				delete me.progress [me.sid][progressId];
+				
+				if (!Object.keys (me.progress [me.sid]).length) {
+					delete me.progress [me.sid];
+				}
+				reject (err);
+			});
 		});
 	}
 	
@@ -526,15 +576,6 @@ class Store {
 		}
 	}
 	
-	/*
-	async function execute (sql) {
-		return await request ({
-			fn: "execute",
-			sql
-		});
-	};
-	*/
-	
 	getData (opts) {
 		let me = this;
 		
@@ -719,25 +760,6 @@ class Store {
 	
 	getRegistered (path) {
 		return this.registered [path];
-	}
-	
-	request (opts) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			request (me, opts).then (data => {
-/*
-				try {
-					data = JSON.parse (data);
-				} catch (err) {
-				}
-*/
-				if (data && data.result) {
-					data = data.result;
-				}
-				resolve (data);
-			}, err => reject (err));
-		});
 	}
 	
 	getRecords (opts) {
