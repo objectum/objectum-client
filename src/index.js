@@ -196,11 +196,7 @@ class Store {
 				data.records.forEach (id => delete me.map ["record"][id]);
 				
 				if (data.progress && me.progress [me.sid]) {
-					for (let progressId in data.progress) {
-						if (me.progress [me.sid][progressId]) {
-							me.progress [me.sid][progressId] (data.progress [progressId]);
-						}
-					}
+					me.progress [me.sid] (data.progress);
 				}
 				me.informerId = setTimeout (() => me.informer (), 500);
 				resolve ();
@@ -222,10 +218,7 @@ class Store {
 		let me = this;
 		
 		return new Promise ((resolve, reject) => {
-			let progressId = `${id ? id : model}-${method}`;
-			
-			me.progress [me.sid] = me.progress [me.sid] || {};
-			me.progress [me.sid][progressId] = progress;
+			me.progress [me.sid] = progress;
 			
 			request (me, {
 				_model: model, _method: method, id
@@ -233,18 +226,12 @@ class Store {
 				if (data && data.result) {
 					data = data.result;
 				}
-				delete me.progress [me.sid][progressId];
+				delete me.progress [me.sid];
 
-				if (!Object.keys (me.progress [me.sid]).length) {
-					delete me.progress [me.sid];
-				}
 				resolve (data);
 			}, err => {
-				delete me.progress [me.sid][progressId];
+				delete me.progress [me.sid];
 				
-				if (!Object.keys (me.progress [me.sid]).length) {
-					delete me.progress [me.sid];
-				}
 				reject (err);
 			});
 		});
