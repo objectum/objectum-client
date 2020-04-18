@@ -789,6 +789,19 @@ class Store {
 			}, err => reject (err));
 		});
 	}
+	
+	getOpts (code) {
+		let v = JSON.parse (localStorage.getItem (this.code) || "{}");
+		
+		return v [code] || {};
+	}
+	
+	setOpts (code, opts) {
+		let v = JSON.parse (localStorage.getItem (this.code) || "{}");
+		
+		v [code] = opts || {};
+		localStorage.setItem (this.code, JSON.stringify (v));
+	}
 };
 
 export {
