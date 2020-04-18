@@ -250,7 +250,7 @@ class _Model extends _Rsc {
 	}
 
 	getTable () {
-		return `${this.get ("code")}_${this.get ("id")}`;
+		return `${this.get ("code").toLowerCase ()}_${this.get ("id")}`;
 	}
 	
 	isDictionary () {
@@ -275,7 +275,7 @@ class _Property extends _Rsc {
 	}
 	
 	getField () {
-		return `${this.get ("code")}_${this.get ("id")}`;
+		return `${this.get ("code").toLowerCase ()}_${this.get ("id")}`;
 	}
 	
 	getLogField () {
