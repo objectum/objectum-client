@@ -77,7 +77,6 @@ class Store {
 				}
 			}
 		});
-		me.originalRecordMap = me.map.record;
 		me.progress = {};
 	}
 
@@ -390,10 +389,6 @@ class Store {
 				"_fn": "startTransaction",
 				description
 			}).then (() => {
-				if (me.map.record != me.originalRecordMap) {
-					me.savedRecordMap = me.map.record;
-					me.map.record = {};
-				}
 				resolve ();
 			}, err => reject (err));
 		});
@@ -406,10 +401,6 @@ class Store {
 			request (me, {
 				"_fn": "commitTransaction"
 			}).then (() => {
-				if (me.savedRecordMap) {
-					me.map.record = me.savedRecordMap;
-					me.savedRecordMap = null
-				}
 				resolve ();
 			}, err => reject (err));
 		});
@@ -422,10 +413,6 @@ class Store {
 			request (me, {
 				"_fn": "rollbackTransaction"
 			}).then (() => {
-				if (me.savedRecordMap) {
-					me.map.record = me.savedRecordMap;
-					me.savedRecordMap = null
-				}
 				resolve ();
 			}, err => reject (err));
 		});
