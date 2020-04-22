@@ -713,12 +713,12 @@ class Store {
 				formData.submit ({
 					host: me.host,
 					port: me.port,
-					path: `${me.path}upload?sessionId=${me.sid}`,
+					path: `${me.path}upload?sid=${me.sid}`,
 				}, function (err, res) {
 					resolve (res.statusCode);
 				});
 			} else {
-				fetch (`${url}/upload?sessionId=${me.sid}`, {
+				fetch (`${url}/upload?sid=${me.sid}`, {
 					method: "POST",
 					body: formData
 				}).then (() => {
