@@ -241,6 +241,15 @@ class _Record extends _Rsc {
 			}, err => reject (err));
 		});
 	}
+	
+	getRef (property) {
+		let me = this;
+		let model = me.store.getModel (me._model);
+		
+		property = model.properties [property];
+		
+		return `/files/${me.id}-${property.id}-${me [property]}`;
+	}
 };
 
 class _Model extends _Rsc {
