@@ -225,7 +225,7 @@ class _Record extends _Rsc {
 		}
 	}
 	
-	server (opts) {
+	remote (opts) {
 		let me = this;
 		
 		return new Promise ((resolve, reject) => {

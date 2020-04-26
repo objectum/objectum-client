@@ -213,15 +213,16 @@ class Store {
 		});
 	}
 	
-	remote ({model, method, id, progress}) {
+	remote (opts) {
 		let me = this;
 		
 		return new Promise ((resolve, reject) => {
 			me.progress [me.sid] = progress;
 			
-			request (me, {
-				_model: model, _method: method, id
-			}).then (data => {
+			opts._model = opts._model || opts.model;
+			opts._method = opts._method || opt.method;
+			
+			request (me, opts).then (data => {
 				if (data && data.result) {
 					data = data.result;
 				}
