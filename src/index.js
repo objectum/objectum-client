@@ -222,6 +222,9 @@ class Store {
 			opts._model = opts._model || opts.model;
 			opts._method = opts._method || opts.method;
 			
+			delete opts.store;
+			delete opts.progress;
+			
 			request (me, opts).then (data => {
 				if (data && data.result) {
 					data = data.result;
