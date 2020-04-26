@@ -217,10 +217,10 @@ class Store {
 		let me = this;
 		
 		return new Promise ((resolve, reject) => {
-			me.progress [me.sid] = progress;
+			me.progress [me.sid] = opts.progress;
 			
 			opts._model = opts._model || opts.model;
-			opts._method = opts._method || opt.method;
+			opts._method = opts._method || opts.method;
 			
 			request (me, opts).then (data => {
 				if (data && data.result) {
