@@ -250,6 +250,13 @@ class _Record extends _Rsc {
 			return `/files/${me.id}-${model.properties [property].id}-${me [property]}`;
 		}
 	}
+	
+	getOpts (property) {
+		let me = this;
+		let s = me [property] || "{}";
+		
+		return JSON.parse (s);
+	}
 };
 
 class _Model extends _Rsc {
