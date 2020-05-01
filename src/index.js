@@ -197,8 +197,15 @@ class Store {
 				if (data.progress && me.progress [me.sid]) {
 					me.progress [me.sid] (data.progress);
 				}
-				me.informerId = setTimeout (() => me.informer (), 500);
-				resolve ();
+				if (data.metaChanged) {
+					me.load ().then (() => {
+						me.informerId = setTimeout (() => me.informer (), 500);
+						resolve ();
+					}, err => reject (err));
+				} else {
+					me.informerId = setTimeout (() => me.informer (), 500);
+					resolve ();
+				}
 			}, err => reject (err));
 		});
 	}
