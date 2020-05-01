@@ -152,6 +152,9 @@ class _Rsc {
 							me.set (code, data [code]);
 						}
 					}
+					if (me._rsc == "query") {
+						me.store.map [me._rsc][me.getPath ()] = me;
+					}
 					resolve ();
 				}, err => reject (err));
 			} else {
