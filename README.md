@@ -533,13 +533,13 @@ await upload ({recordId, propertyId, name, file})
 <a name="registeredModels" />
 
 ## Registered models
+```js
 import {Record} from "objectum-client";
 
 class ItemModel extends Record {
     myMethod () {
     }
 };
-```js
 store.register ("item", ItemModel);
 
 const record = await store.createRecord ({
