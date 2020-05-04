@@ -537,7 +537,8 @@ await upload ({recordId, propertyId, name, file})
 import {Record} from "objectum-client";
 
 class ItemModel extends Record {
-    myMethod () {
+    async myMethod () {
+        return this.store.getData (...);
     }
 };
 store.register ("item", ItemModel);
@@ -545,7 +546,7 @@ store.register ("item", ItemModel);
 const record = await store.createRecord ({
     _model: "item", name: "Foo"
 });
-record.myMethod ();
+await record.myMethod ();
 ```
 
 ## Author
