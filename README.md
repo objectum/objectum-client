@@ -3,13 +3,14 @@ Isomorhic javascript client for objectum platform https://github.com/objectum/ob
 
 Objectum ecosystem:
 * Javascript platform https://github.com/objectum/objectum  
+* Proxy for server methods and access control https://github.com/objectum/objectum-proxy  
 * React components https://github.com/objectum/objectum-react  
 * Command-line interface (CLI) https://github.com/objectum/objectum-cli  
 * Objectum project example https://github.com/objectum/catalog 
 
 ## Install
 ```bash
-npm i objectum-client
+npm install --save objectum-client
 ```
 
 ## API
@@ -44,7 +45,7 @@ npm i objectum-client
         * [Select](#getDataSelect)
         * [Select and count](#getDataCount)
         * [Tree](#getDataTree)
-    * [Model](#getDataModel)
+    * [Model records](#getDataModel)
 * [Get dictionary](#getDict)
 * [Resources](#resources)
     * [Create resource](#createRsc)
@@ -54,14 +55,18 @@ npm i objectum-client
 * [Get session id](#getSessionId)
 * [Set url](#setUrl)
 * [Get url](#getUrl)
+* [Log](#log)
+* [Upload](#upload)
+* [Registered models](#registeredModels)
 
 
 <a name="init" />
 
 ## Initialization
 ```js
-const store = require ("objectum-client");
+import {Store} from "objectum-client";
 
+const store = new Store ();
 store.setUrl ("http://127.0.0.1:8200/projects/catalog/");
 ```
 
@@ -70,7 +75,7 @@ store.setUrl ("http://127.0.0.1:8200/projects/catalog/");
 ## Authentication
 Auth with username "admin", password "admin".
 ```js
-let sessionId = await store.auth ({
+await store.auth ({
     "username": "admin",
     "password": require ("crypto").createHash ("sha1").update ("admin").digest ("hex").toUpperCase ()
 });
@@ -109,7 +114,7 @@ await store.rollbackTransaction ();
 
 ### Create model
 ```js
-await store.createModel ({
+const model = await store.createModel ({
     "name": "Item",
     "code": "item"
 });
@@ -119,7 +124,7 @@ await store.createModel ({
 
 ### Get model
 ```js
-let o = await store.getModel ("item");
+const model = store.getModel ("item");
 ```
 
 <a name="removeModel" />
@@ -137,7 +142,7 @@ await store.removeModel ("item");
 
 ### Create property
 ```js
-await store.createProperty ({
+const property = await store.createProperty ({
     "model": "item",
     "type": "string",
     "name": "Name",
@@ -149,7 +154,7 @@ await store.createProperty ({
 
 ### Get property
 ```js
-await store.getProperty ("item.name");
+const property = store.getProperty ("item.name");
 ```
 
 <a name="removeProperty" />
@@ -167,9 +172,9 @@ await store.removeProperty ("item.name");
 
 ### Create record
 ```js
-let o = await store.createRecord ({
-    "model": "item",
-    "name": "Table"
+const record = await store.createRecord ({
+    "_model": "item",
+    "name": "Foo"
 });
 ```
 
@@ -177,7 +182,7 @@ let o = await store.createRecord ({
 
 ### Get record
 ```js
-let o = await store.getRecord (1005);
+const record = await store.getRecord (1005);
 ```
 
 <a name="removeRecord" />
@@ -195,7 +200,7 @@ await store.removeRecord (1005);
 
 ### Create query
 ```js
-let o = await store.createQuery ({
+const query = await store.createQuery ({
     "name": "Item",
     "code": "item"
 });
@@ -205,7 +210,7 @@ let o = await store.createQuery ({
 
 ### Get query
 ```js
-let o = await store.getQuery ("item");
+const query = store.getQuery ("item");
 ```
 
 <a name="removeQuery" />
@@ -223,7 +228,7 @@ await store.removeQuery ("item");
 
 ### Create column
 ```js
-let o = await store.createColumn ({
+const column = await store.createColumn ({
     "query": "item",
     "name": "Name",
     "code": "name"
@@ -234,7 +239,7 @@ let o = await store.createColumn ({
 
 ### Get column
 ```js
-let o = await store.getColumn ("item.name");
+const column = store.getColumn ("item.name");
 ```
 
 <a name="removeColumn" />
@@ -261,7 +266,7 @@ Get data using sql from query.
 Used in simple read data.
 
 ```js
-let data = await store.getData ({
+const data = await store.getData ({
     query: "item",
     offset: 0,
     limit: 20
@@ -270,11 +275,13 @@ console.log (data.cols, data.recs);
 ```
 SQL example:
 ```sql
+{"data": "begin"}
 select
     {"prop": "a.id", "as": "id"},
     {"prop": "a.name", "as": "name"}
 from
     {"model": "item", "alias": "a"}
+{"data": "end"}
 
 {"where": "empty"}
 
@@ -287,11 +294,11 @@ offset {"param": "offset"}
 #### Select and count
 
 Used in grid. 
-{"where": "empty"} - where class for filters and security in future version.
+{"where": "empty"} - where class for filters and access control (objectum-proxy).
 {"order": "empty"} - order class for order.
     
 ```js
-let data = await store.getData ({
+const data = await store.getData ({
     query: "item",
     offset: 0,
     limit: 20
@@ -345,7 +352,7 @@ offset 0
 
 #### Tree
 ```js
-let data = await store.getData ({
+const data = await store.getData ({
     query: "item",
     offset: 0,
     limit: 20
@@ -432,12 +439,14 @@ group by
 
 <a name="getDataModel" />
 
-#### Model
+#### Model records
 ```js
-let data = await store.getData ({
+const records = await store.getRecords ({
     model: "item",
-    offset: 0,
-    limit: 20
+    filters: [
+        ["name", "is not null"],
+        ["id", "in", [1000, 1010, 1020]]
+    ] 
 });
 console.log (data.cols, data.recs, data.length);
 
@@ -445,7 +454,7 @@ console.log (data.cols, data.recs, data.length);
 
 ## Get dictionary
 ```js
-let recs = await store.getDict ("d.item.type");
+const records = await store.getDict ("d.item.type");
 ```
 
 <a name="resources" />
@@ -457,7 +466,7 @@ Common methods for all resources: model, property, query, column, record.
 
 ### Create resource
 ```js
-let o = await store.createRsc ("record", {
+const o = await store.createRsc ("record", {
     "model": "item",
     "name": "Table"
 });
@@ -467,7 +476,7 @@ let o = await store.createRsc ("record", {
 
 ### Get resource
 ```js
-let o = await store.getRsc ("record", 1005);
+const o = await store.getRsc ("record", 1005);
 ```
 
 <a name="removeRsc" />
@@ -503,6 +512,40 @@ store.setUrl ("/api/projects/catalog/");
 ## Get url
 ```js
 let url = store.getUrl ();
+```
+
+<a name="log" />
+
+## Log
+Change history
+```js
+const recs = await getLog (recordId, propertyId);
+```
+
+<a name="upload" />
+
+## Upload
+name - file name. file - File. propertyId - property type must be "file".
+```js
+await upload ({recordId, propertyId, name, file})
+```
+
+<a name="registeredModels" />
+
+## Registered models
+import {Record} from "objectum-client";
+
+class ItemModel extends Record {
+    myMethod () {
+    }
+};
+```js
+store.register ("item", ItemModel);
+
+const record = await store.createRecord ({
+    _model: "item", name: "Foo"
+});
+record.myMethod ();
 ```
 
 ## Author
