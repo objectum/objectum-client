@@ -272,10 +272,11 @@ class Store {
 					me.username = username;
 					me.userId = data.userId;
 					me.roleId = data.roleId;
+					me.roleCode = data.roleCode;
 					me.menuId = data.menuId;
 					me.code = data.code;
 					
-					resolve ({sid: data.sessionId, userId: data.userId, roleId: data.roleId, menuId: data.menuId, code: data.code, name: data.name});
+					resolve ({sid: data.sessionId, userId: data.userId, roleId: data.roleId, roleCode: data.roleCode, menuId: data.menuId, code: data.code, name: data.name});
 					me.callListeners ("connect", data);
 				}, err => reject (err));
 			}, err => reject (err));

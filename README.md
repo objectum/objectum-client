@@ -1,4 +1,4 @@
-# Objectum client
+# objectum-client
 Isomorhic javascript client for objectum platform https://github.com/objectum/objectum 
 
 Objectum ecosystem:
