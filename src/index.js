@@ -18,6 +18,7 @@ class Store {
 		me.registered = {};
 		me.informerId = null;
 		me.revision = 0;
+		me.inTransaction = false;
 		me.rscAttrs = {
 			"model": [
 				"id", "parent", "name", "code", "description", "order", "unlogged", "query", "opts", "start", "end", "schema", "record"
@@ -406,6 +407,7 @@ class Store {
 				"_fn": "startTransaction",
 				description
 			}).then (() => {
+				me.inTransaction = true;
 				resolve ();
 			}, err => reject (err));
 		});
@@ -418,6 +420,7 @@ class Store {
 			request (me, {
 				"_fn": "commitTransaction"
 			}).then (() => {
+				me.inTransaction = false;
 				resolve ();
 			}, err => reject (err));
 		});
@@ -430,6 +433,7 @@ class Store {
 			request (me, {
 				"_fn": "rollbackTransaction"
 			}).then (() => {
+				me.inTransaction = false;
 				resolve ();
 			}, err => reject (err));
 		});
