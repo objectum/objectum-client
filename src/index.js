@@ -199,11 +199,15 @@ class Store {
 				}
 				if (data.metaChanged) {
 					me.load ().then (() => {
-						me.informerId = setTimeout (() => me.informer (), 500);
+						if (me.sid) {
+							me.informerId = setTimeout (() => me.informer (), 500);
+						}
 						resolve ();
 					}, err => reject (err));
 				} else {
-					me.informerId = setTimeout (() => me.informer (), 500);
+					if (me.sid) {
+						me.informerId = setTimeout (() => me.informer (), 500);
+					}
 					resolve ();
 				}
 			}, err => reject (err));
@@ -248,6 +252,7 @@ class Store {
 	}
 	
 	end () {
+		this.sid = null;
 		clearTimeout (this.informerId);
 	}
 	
