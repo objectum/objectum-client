@@ -254,6 +254,11 @@ class Store {
 	
 	end () {
 		this.sid = null;
+		this.username = null;
+		this.userId = null;
+		this.roleId = null;
+		this.roleCode = null;
+		this.menuId = null;
 		clearTimeout (this.informerId);
 	}
 	
