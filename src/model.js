@@ -197,6 +197,33 @@ class _Record extends _Rsc {
 		let me = this;
 		
 		if (opts.data && opts.data ["_model"]) {
+			let m = me.store.map ["model"][opts.data ["_model"]];
+
+			let define = function () {
+				let a = ["id", "_model", ...Object.keys (m.properties)];
+				
+				for (let i = 0; i < a.length; i ++) {
+					let code = a [i];
+					
+					Object.defineProperty (me, code, {
+						get () {
+							return me.get (code);
+						},
+						set (value) {
+							me.set (code, value);
+						}
+					});
+				}
+			};
+			if (m) {
+				 define ();
+			} else {
+				me.store.getRsc ("model", opts.data ["_model"]).then (_m => {
+					m = _m;
+					define ();
+				});
+			}
+/*
 			me.store.getRsc ("model", opts.data ["_model"]).then (m => {
 				let a = ["id", "_model", ...Object.keys (m.properties)];
 				
@@ -213,6 +240,7 @@ class _Record extends _Rsc {
 					});
 				}
 			});
+*/
 		}
 	}
 
