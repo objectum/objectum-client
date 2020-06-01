@@ -247,7 +247,7 @@ class _Record extends _Rsc {
 	
 	getRef (property) {
 		let me = this;
-		let model = me.store.getModel (me._model);
+		let model = me.store.getModel (me.get ("_model"));
 		
 		if (model.properties [property]) {
 			return `/files/${me.id}-${model.properties [property].id}-${me [property]}`;
