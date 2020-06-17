@@ -260,6 +260,7 @@ class Store {
 		this.roleCode = null;
 		this.menuId = null;
 		clearTimeout (this.informerId);
+		this.callListeners ("disconnect");
 	}
 	
 	auth ({url, username, password}) {
