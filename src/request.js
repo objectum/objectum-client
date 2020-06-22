@@ -53,7 +53,7 @@ function clientRequest (store, json) {
 			res.json ().then (data => {
 				if (data.error) {
 					console.error (data);
-					reject (new Error (data.error));
+					return reject (new Error (data.error));
 				}
 				updateDates (data);
 				
@@ -108,7 +108,7 @@ function serverRequest (store, json) {
 						
 						if (resData.error) {
 							console.error ("request", data);
-							reject (new Error (resData.error));
+							return reject (new Error (resData.error));
 						} else {
 							updateDates (resData);
 							
