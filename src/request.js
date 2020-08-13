@@ -34,7 +34,7 @@ function updateDates (data) {
 };
 
 function clientRequest (store, json) {
-	if (store.abort) {
+	if (store.abort && json._fn != "getNews") {
 		store.abort = false;
 		throw new Error ("Action aborted");
 	}
@@ -73,7 +73,7 @@ function clientRequest (store, json) {
 };
 
 function serverRequest (store, json) {
-	if (store.abort) {
+	if (store.abort && json._fn != "getNews") {
 		store.abort = false;
 		throw new Error ("Action aborted");
 	}
