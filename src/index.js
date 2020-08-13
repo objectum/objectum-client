@@ -821,13 +821,12 @@ class Store {
 	abortAction () {
 		let me = this;
 		
-		me.abort = true;
-		
 		if (!isServer ()) {
 			request (me, {
 				"_fn": "abortAction"
 			}).then (() => {}, () => {});
 		}
+		me.abort = true;
 	}
 };
 
