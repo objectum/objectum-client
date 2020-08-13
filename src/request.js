@@ -34,6 +34,10 @@ function updateDates (data) {
 };
 
 function clientRequest (store, json) {
+	if (store.abort) {
+		store.abort = false;
+		throw new Error ("Action aborted");
+	}
 	return new Promise ((resolve, reject) => {
 		if (!store.url) {
 			return reject (new Error ("url not exists"));
@@ -69,6 +73,10 @@ function clientRequest (store, json) {
 };
 
 function serverRequest (store, json) {
+	if (store.abort) {
+		store.abort = false;
+		throw new Error ("Action aborted");
+	}
 	return new Promise ((resolve, reject) => {
 		if (!store.url) {
 			return reject (new Error ("url not exists"));

@@ -817,6 +817,18 @@ class Store {
 		v [code] = opts || {};
 		localStorage.setItem (this.code, JSON.stringify (v));
 	}
+	
+	abortAction () {
+		let me = this;
+		
+		me.abort = true;
+		
+		if (!isServer ()) {
+			request (me, {
+				"_fn": "abortAction"
+			}).then (() => {}, () => {});
+		}
+	}
 };
 
 export {
