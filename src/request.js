@@ -60,12 +60,14 @@ function clientRequest (store, json) {
 		if (json._trace) {
 			json._trace = [["clientRequest-start", new Date ().getTime ()]];
 		}
+		prepareDates (json);
+		
 		fetch (`${store.url}${store.sid ? `?sid=${store.sid}` : ``}`, {
 			headers: {
 				"Content-Type": "application/json; charset=utf-8"
 			},
 			method: "POST",
-			body: JSON.stringify (prepareDates (json))
+			body: JSON.stringify (json)
 		}).then (res => {
 			res.json ().then (data => {
 				if (data.error) {
@@ -94,7 +96,9 @@ function serverRequest (store, json) {
 		if (!store.url) {
 			return reject (new Error ("url not exists"));
 		}
-		let data = JSON.stringify (prepareDates (json));
+		prepareDates (json);
+		
+		let data = JSON.stringify (json);
 		let resData, reqErr;
 
 		store.callListeners ("before-request", {request: json});
