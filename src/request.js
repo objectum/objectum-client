@@ -1,3 +1,5 @@
+const tzOffset = new Date ().getTimezoneOffset () * 60000;
+
 function isServer () {
 	if (typeof window !== "undefined") {
 		return false;
@@ -33,6 +35,17 @@ function updateDates (data) {
 	}
 };
 
+// корректирует дату, чтобы после JSON.stringify строка даты "2020-08-31T21:00:00.000Z" была "2020-09-01T00:00:00.000Z"
+function prepareDates (json) {
+	for (let a in json) {
+		let v = json [a];
+		
+		if (v && typeof (v) == "object" && v.getMonth) {
+			json [a] = (new Date (v - tzOffset)).toISOString ();
+		}
+	}
+};
+
 function clientRequest (store, json) {
 	if (store.abort && json._fn != "getNews") {
 		store.abort = false;
@@ -52,7 +65,7 @@ function clientRequest (store, json) {
 				"Content-Type": "application/json; charset=utf-8"
 			},
 			method: "POST",
-			body: JSON.stringify (json)
+			body: JSON.stringify (prepareDates (json))
 		}).then (res => {
 			res.json ().then (data => {
 				if (data.error) {
@@ -81,7 +94,7 @@ function serverRequest (store, json) {
 		if (!store.url) {
 			return reject (new Error ("url not exists"));
 		}
-		let data = JSON.stringify (json);
+		let data = JSON.stringify (prepareDates (json));
 		let resData, reqErr;
 
 		store.callListeners ("before-request", {request: json});
