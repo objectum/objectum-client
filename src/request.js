@@ -1,4 +1,4 @@
-const tzOffset = new Date ().getTimezoneOffset () * 60000;
+//const tzOffset = new Date ().getTimezoneOffset () * 60000;
 
 function isServer () {
 	if (typeof window !== "undefined") {
@@ -36,6 +36,9 @@ function updateDates (data) {
 };
 
 // корректирует дату, чтобы после JSON.stringify строка даты "2020-08-31T21:00:00.000Z" была "2020-09-01T00:00:00.000Z"
+// При сохранении в Form приходит строка в ISO формате. Время UTC.
+// При добавлении в Form приходит Date, который при преобразовании в строку дает тоже строка в ISO формате. Время UTC.
+/*
 function prepareDates (json) {
 	for (let a in json) {
 		let v = json [a];
@@ -45,6 +48,7 @@ function prepareDates (json) {
 		}
 	}
 };
+*/
 
 function clientRequest (store, json) {
 	if (store.abort && json._fn != "getNews") {
@@ -60,7 +64,7 @@ function clientRequest (store, json) {
 		if (json._trace) {
 			json._trace = [["clientRequest-start", new Date ().getTime ()]];
 		}
-		prepareDates (json);
+//		prepareDates (json);
 		
 		fetch (`${store.url}${store.sid ? `?sid=${store.sid}` : ``}`, {
 			headers: {
@@ -96,7 +100,7 @@ function serverRequest (store, json) {
 		if (!store.url) {
 			return reject (new Error ("url not exists"));
 		}
-		prepareDates (json);
+//		prepareDates (json);
 		
 		let data = JSON.stringify (json);
 		let resData, reqErr;
