@@ -828,6 +828,36 @@ class Store {
 		}
 		me.abort = true;
 	}
+	
+	getModelRecords (native) {
+		let records = [], map = {};
+		
+		for (let id in this.map.model) {
+			let record = this.map.model [id];
+			
+			if (!map [record.id]) {
+				if (record.id >= 1000 || native) {
+					records.push (record);
+					map [record.id] = true;
+				}
+			}
+		}
+		return records;
+	}
+	
+	getQueryRecords () {
+		let records = [], map = {};
+		
+		for (let id in this.map.query) {
+			let record = this.map.query [id];
+			
+			if (record.id >= 1000 && !map [record.id]) {
+				records.push (record);
+				map [record.id] = true;
+			}
+		}
+		return records;
+	}
 };
 
 export {
