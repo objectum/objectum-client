@@ -123,12 +123,14 @@ class _Rsc {
 			let attrs = {};
 			
 			for (let a in me._data) {
+/*
 				if (me._originalData [a] instanceof Date) {
 					me._originalData [a] = me._originalData [a].toISOString ();
 				}
 				if (me._data [a] instanceof Date) {
 					me._data [a] = me._data [a].toISOString ();
 				}
+*/
 				if (! me._originalData.hasOwnProperty (a) || me._originalData [a] != me._data [a]) {
 					attrs [a] = me._data [a];
 				}
