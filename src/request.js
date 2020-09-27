@@ -66,7 +66,7 @@ function clientRequest (store, json) {
 		if (json._trace) {
 			json._trace = [["clientRequest-start", new Date ().getTime ()]];
 		}
-//		prepareDates (json);
+		prepareDates (json);
 		
 		fetch (`${store.url}${store.sid ? `?sid=${store.sid}` : ``}`, {
 			headers: {
@@ -102,7 +102,7 @@ function serverRequest (store, json) {
 		if (!store.url) {
 			return reject (new Error ("url not exists"));
 		}
-//		prepareDates (json);
+		prepareDates (json);
 		
 		let data = JSON.stringify (json);
 		let resData, reqErr;
