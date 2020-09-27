@@ -35,20 +35,22 @@ function updateDates (data) {
 	}
 };
 
-// корректирует дату, чтобы после JSON.stringify строка даты "2020-08-31T21:00:00.000Z" была "2020-09-01T00:00:00.000Z"
-// При сохранении в Form приходит строка в ISO формате. Время UTC.
-// При добавлении в Form приходит Date, который при преобразовании в строку дает тоже строка в ISO формате. Время UTC.
-/*
+// ? корректирует дату, чтобы после JSON.stringify строка даты "2020-08-31T21:00:00.000Z" была "2020-09-01T00:00:00.000Z"
+// ? При сохранении в Form приходит строка в ISO формате. Время UTC.
+// ? При добавлении в Form приходит Date, который при преобразовании в строку дает тоже строка в ISO формате. Время UTC.
+//json [a] = (new Date (v - tzOffset)).toISOString ();
 function prepareDates (json) {
 	for (let a in json) {
 		let v = json [a];
 		
-		if (v && typeof (v) == "object" && v.getMonth) {
-			json [a] = (new Date (v - tzOffset)).toISOString ();
+		// min=0, sec=0, msec=0 => date
+		if (v && typeof (v) == "object" && v.getMonth &&
+			!v.getMinutes () && !v.getSeconds () && !v.getMilliseconds ()
+		) {
+			json [a] = `${v.getFullYear ()}-${String (v.getMonth () + 1).padStart (2, "0")}-${String (v.getDate () + 1).padStart (2, "0")}`;
 		}
 	}
 };
-*/
 
 function clientRequest (store, json) {
 	if (store.abort && json._fn != "getNews") {
