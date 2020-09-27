@@ -47,7 +47,7 @@ function prepareDates (json) {
 		if (v && typeof (v) == "object" && v.getMonth &&
 			!v.getMinutes () && !v.getSeconds () && !v.getMilliseconds ()
 		) {
-			json [a] = `${v.getFullYear ()}-${String (v.getMonth () + 1).padStart (2, "0")}-${String (v.getDate () + 1).padStart (2, "0")}`;
+			json [a] = `${v.getFullYear ()}-${String (v.getMonth () + 1).padStart (2, "0")}-${String (v.getDate ()).padStart (2, "0")}`;
 		}
 	}
 };
