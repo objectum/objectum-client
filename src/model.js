@@ -144,12 +144,14 @@ class _Rsc {
 					if (me._rsc == "record") {
 						let m = me.store.map ["model"][me.get ("_model")];
 						
+/*
 						if (m && m.isDictionary ()) {
 							delete me.store.map ["dict"][m.get ("id")];
 							delete me.store.map ["dict"][m.getPath ()];
 							delete me.store.dict [m.get ("id")];
 							delete me.store.dict [m.getPath ()];
 						}
+*/
 						for (let code in m.properties) {
 							me.set (code, data [code]);
 						}
