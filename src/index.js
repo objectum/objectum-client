@@ -647,7 +647,7 @@ class Store {
 			if (me.map ["dict"][id]) {
 				return resolve (me.map ["dict"][id]);
 			}
-			me.getRecords ({model: id}).then (records => {
+			me.getRecords ({model: id, sort: true}).then (records => {
 				me.map ["dict"][id] = records;
 				me.dict [id] = {};
 				
@@ -800,6 +800,9 @@ class Store {
 						return record;
 					}
 				});
+				if (opts.sort && recs.length && recs [0].hasOwnProperty ("order")) {
+					records = records.sort ((a, b) => a.order > b.order || -1);
+				}
 				resolve (records);
 			}, err => reject (err));
 		});
