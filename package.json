@@ -1,6 +1,6 @@
 {
   "name": "objectum-client",
-  "version": "1.2.13",
+  "version": "1.2.14",
   "description": "Isomorphic client for objectum platform",
   "main": "lib/index.js",
   "module": "es/index.js",

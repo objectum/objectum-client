@@ -169,8 +169,10 @@ function serverRequest (store, json) {
 };
 
 function execute (fn, opts) {
+	let me = this;
+	
 	return new Promise ((resolve, reject) => {
-		let promise = fn (opts);
+		let promise = fn.call (me, opts);
 		
 		if (promise && promise.then) {
 			promise.then (result => {
