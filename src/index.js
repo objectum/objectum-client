@@ -839,7 +839,7 @@ class Store {
 			let record = this.map.model [id];
 			
 			if (!map [record.id]) {
-				if (record.id >= 1000 || native) {
+				if (record.id >= 1000 || (native && record.id < 6)) {
 					records.push (record);
 					map [record.id] = true;
 				}
