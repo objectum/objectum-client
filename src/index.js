@@ -651,8 +651,13 @@ class Store {
 				me.map ["dict"][id] = records;
 				me.dict [id] = {};
 				
-				records.forEach (record => me.dict [id][record.id] = record);
-				
+				records.forEach (record => {
+					me.dict [id][record.id] = record;
+					
+					if (record.code && !me.dict [id][record.code]) {
+						me.dict [id][record.code] = record;
+					}
+				});
 				resolve (records);
 			}, err => reject (err));
 		});
