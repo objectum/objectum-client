@@ -31,7 +31,7 @@ class _Rsc {
 			}
 		});
 
-		let initValue = function (a, v) {
+		let initValue = (a, v) => {
 			this._data [a] = v;
 			this._originalData [a] = v;
 		};
