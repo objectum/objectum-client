@@ -1,25 +1,23 @@
-import {factory, parseRecDates, Record} from "./model.js";
-import {request, isServer, execute} from "./request.js";
+import {factory, Record} from "./model.js";
+import {parseDates, request, isServer, execute} from "./request.js";
 
 class Store {
 	constructor () {
-		let me = this;
-		
-		me.sid = null;
-		me.url = null;
-		me.http = null;
-		me.host = null;
-		me.port = null;
-		me.path = null;
-		me.userId = null;
-		me.roleId = null;
-		me.menuId = null;
-		me.listeners = {};
-		me.registered = {};
-		me.informerId = null;
-		me.revision = 0;
-		me.inTransaction = false;
-		me.rscAttrs = {
+		this.sid = null;
+		this.url = null;
+		this.http = null;
+		this.host = null;
+		this.port = null;
+		this.path = null;
+		this.userId = null;
+		this.roleId = null;
+		this.menuId = null;
+		this.listeners = {};
+		this.registered = {};
+		this.informerId = null;
+		this.revision = 0;
+		this.inTransaction = false;
+		this.rscAttrs = {
 			"model": [
 				"id", "parent", "name", "code", "description", "order", "unlogged", "query", "opts", "start", "end", "schema", "record"
 			],
@@ -33,59 +31,57 @@ class Store {
 				"id", "query", "name", "code", "description", "order", "property", "area", "columnWidth", "opts", "start", "end", "schema", "record"
 			]
 		};
-		me.initMap ();
-		me.addListener ("before-request", opts => {
+		this.initMap ();
+		this.addListener ("before-request", opts => {
 			let req = opts.request;
 			
 			if (req._rsc == "record") {
 				if (req._fn == "remove") {
-					let record = me.map ["record"][req.id];
+					let record = this.map ["record"][req.id];
 					
 					if (record) {
-						let m = me.getModel (record._model);
+						let m = this.getModel (record._model);
 						let id = m.getPath ();
 						
-						if (me.dict [id]) {
-							for (let i = 0; i < me.map ["dict"][id].length; i ++) {
-								let record2 = me.map ["dict"][id][i];
+						if (this.dict [id]) {
+							for (let i = 0; i < this.map ["dict"][id].length; i ++) {
+								let record2 = this.map ["dict"][id][i];
 								
 								if (!record2 || record2.id == record.id) {
-									me.map ["dict"][id].splice (i, 1);
+									this.map ["dict"][id].splice (i, 1);
 									break;
 								}
 							}
-							delete me.dict [id][record.id];
+							delete this.dict [id][record.id];
 						}
 					}
 				}
 			}
 		});
-		me.addListener ("after-request", opts => {
+		this.addListener ("after-request", opts => {
 			let req = opts.request;
 			let res = opts.response;
 			
 			if (req._rsc == "record") {
 				if (req._fn == "create") {
-					let m = me.getModel (req._model);
+					let m = this.getModel (req._model);
 					let id = m.getPath ();
 					
-					if (me.dict [id]) {
-						me.getRecord (res.id).then (record => {
-							me.map ["dict"][id] = [record, ...me.map ["dict"][id]];
-							me.dict [id] = me.dict [id] || {};
-							me.dict [id][record.id] = record;
+					if (this.dict [id]) {
+						this.getRecord (res.id).then (record => {
+							this.map ["dict"][id] = [record, ...this.map ["dict"][id]];
+							this.dict [id] = this.dict [id] || {};
+							this.dict [id][record.id] = record;
 						});
 					}
 				}
 			}
 		});
-		me.progress = {};
+		this.progress = {};
 	}
 
 	initMap () {
-		let me = this;
-		
-		me.map = {
+		this.map = {
 			"sid": null,
 			"model": {},
 			"property": {},
@@ -94,163 +90,131 @@ class Store {
 			"record": {},
 			"dict": {}
 		};
-		me.dict = {};
+		this.dict = {};
 	}
 	
 	addListener (event, fn) {
-		let me = this;
-		
-		me.listeners [event] = me.listeners [event] || [];
-		me.listeners [event].push (fn);
+		this.listeners [event] = this.listeners [event] || [];
+		this.listeners [event].push (fn);
 	}
 	
 	removeListener (event, fn) {
-		let me = this;
+		this.listeners [event] = this.listeners [event] || [];
 		
-		me.listeners [event] = me.listeners [event] || [];
-		
-		for (let i = 0; i < me.listeners [event].length; i ++) {
-			if (me.listeners [event][i] == fn) {
-				me.listeners [event].splice (i, 1);
+		for (let i = 0; i < this.listeners [event].length; i ++) {
+			if (this.listeners [event][i] == fn) {
+				this.listeners [event].splice (i, 1);
 				break;
 			}
 		}
 	}
 	
 	callListeners (event, opts) {
-		let me = this;
-		
-		if (me.listeners [event]) {
-			for (let i = 0; i < me.listeners [event].length; i ++) {
-				me.listeners [event][i] (opts);
+		if (this.listeners [event]) {
+			for (let i = 0; i < this.listeners [event].length; i ++) {
+				this.listeners [event][i] (opts);
 			}
 		}
 	}
 	
-	load () {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			request (me, {
-				"_fn": "getAll"
-			}).then (data => {
-				Object.keys (me.rscAttrs).forEach (rsc => {
-					data [rsc].forEach (row => {
-						let o = factory ({rsc, row, store: me});
-						
-						if (rsc == "model") {
-							o.attrs = {};
-							o.properties = {};
-						}
-						if (rsc == "query") {
-							o.attrs = {};
-							o.columns = {};
-						}
-						me.map [rsc][o.get ("id")] = o;
-					});
-					if (rsc == "model" || rsc == "query") {
-						Object.keys (me.map [rsc]).forEach (id => {
-							let o = me.map [rsc][id];
-							
-							me.map [rsc][o.getPath ()] = o;
-						});
-					}
-					if (rsc == "property") {
-						Object.keys (me.map ["property"]).forEach (id => {
-							let o = me.map ["property"][id];
-							let oo = me.map ["model"][o.get ("model")];
-							
-							if (oo) {
-								oo.attrs [o.get ("code")] = o;
-								oo.properties [o.get ("code")] = o;
-								me.map ["property"][oo.getPath () + "." + o.get ("code")] = o;
-							}
-						});
-					}
-					if (rsc == "column") {
-						Object.keys (me.map ["column"]).forEach (id => {
-							let o = me.map ["column"][id];
-							let oo = me.map ["query"][o.get ("query")];
-							
-							if (oo) {
-								oo.attrs [o.get ("code")] = o;
-								oo.columns [o.get ("code")] = o;
-								me.map ["column"][oo.getPath () + "." + o.get ("code")] = o;
-							}
-						});
+	async load () {
+		let data = await request (this, {
+			"_fn": "getAll"
+		});
+		Object.keys (this.rscAttrs).forEach (rsc => {
+			data [rsc].forEach (row => {
+				let o = factory ({rsc, row, store: this});
+
+				if (rsc == "model") {
+					o.attrs = {};
+					o.properties = {};
+				}
+				if (rsc == "query") {
+					o.attrs = {};
+					o.columns = {};
+				}
+				this.map [rsc][o.get ("id")] = o;
+			});
+			if (rsc == "model" || rsc == "query") {
+				Object.keys (this.map [rsc]).forEach (id => {
+					let o = this.map [rsc][id];
+
+					this.map [rsc][o.getPath ()] = o;
+				});
+			}
+			if (rsc == "property") {
+				Object.keys (this.map ["property"]).forEach (id => {
+					let o = this.map ["property"][id];
+					let oo = this.map ["model"][o.get ("model")];
+
+					if (oo) {
+						oo.attrs [o.get ("code")] = o;
+						oo.properties [o.get ("code")] = o;
+						this.map ["property"][oo.getPath () + "." + o.get ("code")] = o;
 					}
 				});
-				resolve ();
-			}, err => reject (err));
-		});
-	}
-	
-	informer () {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			request (me, {
-				"_fn": "getNews",
-				revision: me.revision
-			}).then (data => {
-				me.revision = data.revision;
-				data.records.forEach (id => delete me.map ["record"][id]);
-				
-				if (data.progress && me.progress [me.sid]) {
-					me.progress [me.sid] (data.progress);
-				}
-				if (data.metaChanged) {
-					me.load ().then (() => {
-						if (me.sid) {
-							me.informerId = setTimeout (() => me.informer (), 500);
-						}
-						resolve ();
-					}, err => reject (err));
-				} else {
-					if (me.sid) {
-						me.informerId = setTimeout (() => me.informer (), 500);
-					}
-					resolve ();
-				}
-			}, err => reject (err));
-		});
-	}
-	
-	request (opts) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			request (me, opts).then (data => {
-				resolve (data);
-			}, err => reject (err));
-		});
-	}
-	
-	remote (opts) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			me.progress [me.sid] = opts.progress;
-			
-			opts._model = opts._model || opts.model;
-			opts._method = opts._method || opts.method;
-			
-			delete opts.store;
-			delete opts.progress;
-			
-			request (me, opts).then (data => {
-				if (data && data.result) {
-					data = data.result;
-				}
-				delete me.progress [me.sid];
+			}
+			if (rsc == "column") {
+				Object.keys (this.map ["column"]).forEach (id => {
+					let o = this.map ["column"][id];
+					let oo = this.map ["query"][o.get ("query")];
 
-				resolve (data);
-			}, err => {
-				delete me.progress [me.sid];
-				
-				reject (err);
-			});
+					if (oo) {
+						oo.attrs [o.get ("code")] = o;
+						oo.columns [o.get ("code")] = o;
+						this.map ["column"][oo.getPath () + "." + o.get ("code")] = o;
+					}
+				});
+			}
 		});
+	}
+	
+	async informer () {
+		let data = await request (this, {
+			"_fn": "getNews",
+			revision: this.revision
+		});
+		this.revision = data.revision;
+		data.records.forEach (id => delete this.map ["record"][id]);
+
+		if (data.progress && this.progress [this.sid]) {
+			this.progress [this.sid] (data.progress);
+		}
+		if (data.metaChanged) {
+			await this.load ();
+
+			if (this.sid) {
+				this.informerId = setTimeout (() => this.informer (), 500);
+			}
+		} else {
+			if (this.sid) {
+				this.informerId = setTimeout (() => this.informer (), 500);
+			}
+		}
+	}
+	
+	async remote (opts) {
+		this.progress [this.sid] = opts.progress;
+
+		opts._model = opts._model || opts.model;
+		opts._method = opts._method || opts.method;
+
+		delete opts.store;
+		delete opts.progress;
+
+		try {
+			let data = await request (this, opts);
+
+			if (data && data.result) {
+				data = data.result;
+			}
+			delete this.progress [this.sid];
+
+			return data;
+		} catch (err) {
+			delete this.progress [this.sid];
+			throw err;
+		}
 	}
 	
 	end () {
@@ -264,279 +228,166 @@ class Store {
 		this.callListeners ("disconnect");
 	}
 	
-	auth ({url, username, password}) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			if (url) {
-				me.setUrl (url);
-			}
-			request (me, {
-				"_fn": "auth",
-				username,
-				password
-			}).then (data => {
-				if (data.sessionId) {
-					me.setSessionId (data.sessionId);
-				}
-				me.load ().then (() => {
-					me.informer ();
-					
-					me.username = username;
-					me.userId = data.userId;
-					me.roleId = data.roleId;
-					me.roleCode = data.roleCode;
-					me.menuId = data.menuId;
-					me.code = data.code;
-					
-					resolve ({sid: data.sessionId, userId: data.userId, roleId: data.roleId, roleCode: data.roleCode, menuId: data.menuId, code: data.code, name: data.name});
-					me.callListeners ("connect", data);
-				}, err => reject (err));
-			}, err => reject (err));
+	async auth ({url, username, password}) {
+		if (url) {
+			this.setUrl (url);
+		}
+		let data = await request (this, {
+			"_fn": "auth",
+			username,
+			password
 		});
+		if (data.sessionId) {
+			this.setSessionId (data.sessionId);
+		}
+		await this.load ();
+		this.informer ();
+
+		this.username = username;
+		this.userId = data.userId;
+		this.roleId = data.roleId;
+		this.roleCode = data.roleCode;
+		this.menuId = data.menuId;
+		this.code = data.code;
+		this.callListeners ("connect", data);
+
+		return {
+			sid: data.sessionId, userId: data.userId, roleId: data.roleId, roleCode: data.roleCode, menuId: data.menuId, code: data.code, name: data.name
+		};
 	}
 	
-	getRsc (rsc, id) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			let o = me.map [rsc][id];
-			
-			if (o) {
-				resolve (o);
-			} else {
-				request (me, {
-					_fn: "get",
-					_rsc: rsc,
-					id
-				}).then (data => {
-					o = factory ({rsc, data, store: me});
-					
-					//me.map [rsc][o.get ("id")] = o;
-					//me.map [rsc][o.getPath ()] = o;
-					
-					resolve (o);
-				}, err => reject (err));
-			}
-		});
-	}
-	
-	createRsc (rsc, attrs) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			request (me, Object.assign ({
-				_fn: "create",
-				_rsc: rsc
-			}, attrs)).then (data => {
-				let o = factory ({rsc, data, store: me});
-				
-				me.map [rsc][o.get ("id")] = o;
-				me.map [rsc][o.getPath ()] = o;
-				
-				if (rsc == "record" && attrs ["_model"]) {
-					let m = me.map ["model"][attrs ["_model"]];
-					
-					if (m.isDictionary ()) {
-						delete me.map ["dict"][m.get ("id")];
-						delete me.map ["dict"][m.getPath ()];
-						delete me.dict [m.get ("id")];
-						delete me.dict [m.getPath ()];
-					}
-				}
-				if (rsc == "property") {
-					me.map ["model"][o.get ("model")].attrs [o.get ("code")] = o;
-					me.map ["model"][o.get ("model")].properties [o.get ("code")] = o;
-				}
-				if (rsc == "column") {
-					me.map ["query"][o.get ("query")].attrs [o.get ("code")] = o;
-					me.map ["query"][o.get ("query")].columns [o.get ("code")] = o;
-				}
-				resolve (o);
-			}, err => reject (err));
-		});
-	}
-	
-	removeRsc (rsc, id) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			request (me, {
-				_fn: "remove",
+	async getRsc (rsc, id) {
+		let o = this.map [rsc][id];
+
+		if (o) {
+			return o;
+		} else {
+			let data = await request (this, {
+				_fn: "get",
 				_rsc: rsc,
 				id
-			}).then (() => {
-				if (rsc == "property") {
-					let o = me.map ["property"][id];
-					
-					if (o) {
-						delete me.map ["model"][o.get ("model")].attrs [o.get ("code")];
-						delete me.map ["model"][o.get ("model")].properties [o.get ("code")];
-					}
-				}
-				if (rsc == "column") {
-					let o = me.map ["column"][id];
-					
-					if (o) {
-						delete me.map ["query"][o.get ("query")].attrs [o.get ("code")];
-						delete me.map ["query"][o.get ("query")].columns [o.get ("code")];
-					}
-				}
-				delete me.map [rsc][id];
-				
-				let o = me.map [rsc][id];
-				
-				if (o) {
-					delete me.map [rsc][o.getPath ()];
-					
-					/*
-					todo: no loaded record
-									if (rsc == "record") {
-										let m = map ["model"][attrs ["_model"]];
-										
-										if (m && m.isDictionary ()) {
-											delete map ["dict"][m.get ("id")];
-											delete map ["dict"][m.getPath ()];
-										}
-									}
-					*/
-				}
-				resolve ();
-			}, err => reject (err));
-		});
+			});
+			o = factory ({rsc, data, store: this});
+			//this.map [rsc][o.get ("id")] = o;
+			//this.map [rsc][o.getPath ()] = o;
+
+			return o;
+		}
 	}
 	
-	startTransaction (description) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			request (me, {
-				"_fn": "startTransaction",
-				description
-			}).then (() => {
-				me.inTransaction = true;
-				resolve ();
-			}, err => reject (err));
+	async createRsc (rsc, attrs) {
+		let data = await request (this, Object.assign ({
+			_fn: "create",
+			_rsc: rsc
+		}, attrs));
+		let o = factory ({rsc, data, store: this});
+
+		this.map [rsc][o.get ("id")] = o;
+		this.map [rsc][o.getPath ()] = o;
+
+		if (rsc == "record" && attrs ["_model"]) {
+			let m = this.map ["model"][attrs ["_model"]];
+
+			if (m.isDictionary ()) {
+				delete this.map ["dict"][m.get ("id")];
+				delete this.map ["dict"][m.getPath ()];
+				delete this.dict [m.get ("id")];
+				delete this.dict [m.getPath ()];
+			}
+		}
+		if (rsc == "property") {
+			this.map ["model"][o.get ("model")].attrs [o.get ("code")] = o;
+			this.map ["model"][o.get ("model")].properties [o.get ("code")] = o;
+		}
+		if (rsc == "column") {
+			this.map ["query"][o.get ("query")].attrs [o.get ("code")] = o;
+			this.map ["query"][o.get ("query")].columns [o.get ("code")] = o;
+		}
+		return o;
+	}
+	
+	async removeRsc (rsc, id) {
+		await request (this, {
+			_fn: "remove",
+			_rsc: rsc,
+			id
 		});
+		if (rsc == "property") {
+			let o = this.map ["property"][id];
+
+			if (o) {
+				delete this.map ["model"][o.get ("model")].attrs [o.get ("code")];
+				delete this.map ["model"][o.get ("model")].properties [o.get ("code")];
+			}
+		}
+		if (rsc == "column") {
+			let o = this.map ["column"][id];
+
+			if (o) {
+				delete this.map ["query"][o.get ("query")].attrs [o.get ("code")];
+				delete this.map ["query"][o.get ("query")].columns [o.get ("code")];
+			}
+		}
+		delete this.map [rsc][id];
+
+		let o = this.map [rsc][id];
+
+		if (o) {
+			delete this.map [rsc][o.getPath ()];
+
+			/*
+			todo: no loaded record
+							if (rsc == "record") {
+								let m = map ["model"][attrs ["_model"]];
+
+								if (m && m.isDictionary ()) {
+									delete map ["dict"][m.get ("id")];
+									delete map ["dict"][m.getPath ()];
+								}
+							}
+			*/
+		}
+	}
+	
+	async startTransaction (description) {
+		await request (this, {"_fn": "startTransaction", description});
+		this.inTransaction = true;
 	};
 	
-	commitTransaction () {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			request (me, {
-				"_fn": "commitTransaction"
-			}).then (() => {
-				me.inTransaction = false;
-				resolve ();
-			}, err => reject (err));
-		});
+	async commitTransaction () {
+		await request (this, {"_fn": "commitTransaction"});
+		this.inTransaction = false;
 	}
 	
-	rollbackTransaction () {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			request (me, {
-				"_fn": "rollbackTransaction"
-			}).then (() => {
-				me.inTransaction = false;
-				resolve ();
-			}, err => reject (err));
-		});
+	async rollbackTransaction () {
+		await request (this, {"_fn": "rollbackTransaction"});
+		this.inTransaction = false;
 	}
 	
-	getRecord (id) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			me.getRsc ("record", id).then ((rsc) => resolve (rsc), err => reject (err));
-		});
-	}
-	
-	createRecord (attrs) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			me.createRsc ("record", attrs).then ((rsc) => resolve (rsc), err => reject (err));
-		});
-	}
-	
-	removeRecord (id) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			me.removeRsc ("record", id).then ((rsc) => resolve (rsc), err => reject (err));
-		});
-	}
-	
-	createModel (attrs) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			me.createRsc ("model", attrs).then ((rsc) => resolve (rsc), err => reject (err));
-		});
-	}
-	
-	removeModel (id) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			me.removeRsc ("model", id).then ((rsc) => resolve (rsc), err => reject (err));
-		});
-	}
-	
-	createQuery (attrs) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			me.createRsc ("query", attrs).then ((rsc) => resolve (rsc), err => reject (err));
-		});
-	}
-	
-	removeQuery (id) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			me.removeRsc ("query", id).then ((rsc) => resolve (rsc), err => reject (err));
-		});
-	}
-	
-	createProperty (attrs) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			me.createRsc ("property", attrs).then ((rsc) => resolve (rsc), err => reject (err));
-		});
-	}
-	
-	removeProperty (id) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			me.removeRsc ("property", id).then ((rsc) => resolve (rsc), err => reject (err));
-		});
-	}
-	
-	createColumn (attrs) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			me.createRsc ("column", attrs).then ((rsc) => resolve (rsc), err => reject (err));
-		});
-	}
-	
-	removeColumn (id) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			me.removeRsc ("column", id).then ((rsc) => resolve (rsc), err => reject (err));
-		});
-	}
-	
+	getRecord = id => this.getRsc ("record", id);
+
+	createRecord = attrs => this.createRsc ("record", attrs);
+
+	removeRecord = id => this.removeRsc ("record", id);
+
+	createModel = attrs => this.createRsc ("model", attrs);
+
+	removeModel  = id => this.removeRsc ("model", id);
+
+	createQuery = attrs => this.createRsc ("query", attrs);
+
+	removeQuery = id => this.removeRsc ("query", id);
+
+	createProperty = attrs => this.createRsc ("property", attrs);
+
+	removeProperty = id => this.removeRsc ("property", id);
+
+	createColumn = attrs => this.createRsc ("column", attrs);
+
+	removeColumn = id => this.removeRsc ("column", id);
+
 	getModel (id) {
-		let me = this;
-		let o = me.map ["model"][id];
+		let o = this.map ["model"][id];
 		
 		if (o) {
 			return o;
@@ -546,8 +397,7 @@ class Store {
 	}
 	
 	getProperty (id) {
-		let me = this;
-		let o = me.map ["property"][id];
+		let o = this.map ["property"][id];
 		
 		if (o) {
 			return o;
@@ -557,8 +407,7 @@ class Store {
 	}
 	
 	getQuery (id) {
-		let me = this;
-		let o = me.map ["query"][id];
+		let o = this.map ["query"][id];
 		
 		if (o) {
 			return o;
@@ -568,8 +417,7 @@ class Store {
 	}
 	
 	getColumn (id) {
-		let me = this;
-		let o = me.map ["column"][id];
+		let o = this.map ["column"][id];
 		
 		if (o) {
 			return o;
@@ -578,154 +426,106 @@ class Store {
 		}
 	}
 	
-	getData (opts) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			request (me, Object.assign ({
-				"_fn": "getData"
-			}, opts)).then (result => {
-				result.recs = result.recs.map (rec => {
-					let newRec = {};
-					
-					result.cols.forEach ((col, i) => {
-						newRec [col.code] = rec [i];
-					});
-					parseRecDates (newRec);
-					
-					return newRec;
-				});
-				resolve (result);
-			}, err => reject (err));
+	async getData (opts) {
+		let result = await request (this, Object.assign ({
+			"_fn": "getData"
+		}, opts));
+
+		result.recs = result.recs.map (rec => {
+			let newRec = {};
+
+			result.cols.forEach ((col, i) => {
+				newRec [col.code] = rec [i];
+			});
+			parseDates (newRec);
+
+			return newRec;
 		});
+		return result;
 	}
 	
-	getRecs (opts) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			request (me, Object.assign ({
-				"_fn": "getData"
-			}, opts)).then (result => {
-				result.recs = result.recs.map (rec => {
-					let newRec = {};
-					
-					result.cols.forEach ((col, i) => {
-						newRec [col.code] = rec [i];
-					});
-					parseRecDates (newRec);
-					
-					return newRec;
-				});
-				resolve (result.recs);
-			}, err => reject (err));
-		});
-	}
-	
-	getDict (id) {
-		let me = this;
-		
+	getRecs = async opts => (await this.getData (opts)).recs;
+
+	async getDict (id) {
 /*
 		return new Promise ((resolve, reject) => {
-			if (me.map ["dict"][id]) {
-				return resolve (me.map ["dict"][id]);
+			if (this.map ["dict"][id]) {
+				return resolve (this.map ["dict"][id]);
 			}
-			request (me, {
+			request (this, {
 				"_fn": "getDict",
 				"model": id
 			}).then (recs => {
-				me.map ["dict"][id] = recs;
-				me.dict [id] = {};
+				this.map ["dict"][id] = recs;
+				this.dict [id] = {};
 				
-				recs.forEach (rec => me.dict [id][rec.id] = rec);
+				recs.forEach (rec => this.dict [id][rec.id] = rec);
 				
 				resolve (recs);
 			}, err => reject (err));
 		});
 */
-		return new Promise ((resolve, reject) => {
-			if (me.map ["dict"][id]) {
-				return resolve (me.map ["dict"][id]);
+		if (this.map ["dict"][id]) {
+			return this.map ["dict"][id];
+		}
+		let records = await this.getRecords ({model: id, sort: true});
+
+		this.map ["dict"][id] = records;
+		this.dict [id] = {};
+
+		records.forEach (record => {
+			this.dict [id][record.id] = record;
+
+			if (record.code && !this.dict [id][record.code]) {
+				this.dict [id][record.code] = record;
 			}
-			me.getRecords ({model: id, sort: true}).then (records => {
-				me.map ["dict"][id] = records;
-				me.dict [id] = {};
-				
-				records.forEach (record => {
-					me.dict [id][record.id] = record;
-					
-					if (record.code && !me.dict [id][record.code]) {
-						me.dict [id][record.code] = record;
-					}
-				});
-				resolve (records);
-			}, err => reject (err));
 		});
+		return records;
 	}
 	
-	getLog (recordId, propertyId) {
-		let me = this;
-		
-		return new Promise ((resolve, reject) => {
-			request (me, {
-				"_fn": "getLog",
-				"record": recordId,
-				"property": propertyId
-			}).then (recs => {
-				resolve (recs);
-			}, err => reject (err));
-		});
-	}
-	
-	getUserId () {
-		return this.userId;
-	}
-	
-	getRoleId () {
-		return this.roleId;
-	}
-	
-	getMenuId () {
-		return this.menuId;
-	}
-	
-	setSessionId (sid) {
-		this.sid = sid;
-	}
-	
-	getSessionId () {
-		return this.sid;
-	}
-	
+	getLog = (recordId, propertyId) => request (this, {
+		"_fn": "getLog",
+		"record": recordId,
+		"property": propertyId
+	});
+
+	register = (path, Cls) => this.registered [path] = Cls;
+
+	getRegistered = path => this.registered [path];
+
+	getUserId = () => this.userId
+
+	getRoleId = () => this.roleId;
+
+	getMenuId = () => this.menuId;
+
+	setSessionId = sid => this.sid = sid;
+
+	getSessionId = () => this.sid;
+
+	getUrl = () => this.url;
+
 	setUrl (url) {
-		let me = this;
-		
 		if (isServer ()) {
 			let opts = require ("url").parse (url);
 			
-			me.url = url;
-			me.http = opts.protocol == "https:" ? require ("https") : require ("http");
-			me.host = opts.hostname;
-			me.port = opts.port || (opts.protocol == "https:" ? 443 : 80);
-			me.path = opts.path;
+			this.url = url;
+			this.http = opts.protocol == "https:" ? require ("https") : require ("http");
+			this.host = opts.hostname;
+			this.port = opts.port || (opts.protocol == "https:" ? 443 : 80);
+			this.path = opts.path;
 		} else {
-			me.url = url;
+			this.url = url;
 		}
 	}
-	
-	getUrl () {
-		return this.url;
-	}
-	
+
 	upload ({recordId, propertyId, name, file}) {
-		let me = this;
-		
 		return new Promise ((resolve, reject) => {
 			let formData;
-			
+
 			if (isServer ()) {
 				let FormData = require ("form-data");
-				
+
 				formData = new FormData ();
 			} else {
 				formData = new FormData ();
@@ -737,104 +537,85 @@ class Store {
 				filename: name,
 				knownLength: file.length
 			});
-			let url = me.getUrl ();
-			
+			let url = this.getUrl ();
+
 			if (url [url.length - 1] == "/") {
 				url = url.substr (0, url.length - 1);
 			}
 			if (isServer ()) {
 				formData.submit ({
-					host: me.host,
-					port: me.port,
-					path: `${me.path}upload?sid=${me.sid}`,
+					host: this.host,
+					port: this.port,
+					path: `${this.path}upload?sid=${this.sid}`,
 				}, function (err, res) {
+					if (err) {
+						return reject (err);
+					}
 					resolve (res.statusCode);
 				});
 			} else {
-				fetch (`${url}/upload?sid=${me.sid}`, {
+				fetch (`${url}/upload?sid=${this.sid}`, {
 					method: "POST",
 					body: formData
-				}).then (() => {
-					resolve ();
-				});
+				}).then (resolve).catch (reject);
 			}
 		});
 	}
 	
-	register (path, Cls) {
-		this.registered [path] = Cls;
-	}
-	
-	getRegistered (path) {
-		return this.registered [path];
-	}
-	
-	getRecords (opts) {
-		let me = this;
-		
+	async getRecords (opts) {
 		if (!opts.model) {
 			throw new Error ("model not exist");
 		}
-		if (!me.map ["model"][opts.model]) {
+		if (!this.map ["model"][opts.model]) {
 			throw new Error (`unknown model: ${opts.model}`);
 		}
-		return new Promise ((resolve, reject) => {
-			request (me, Object.assign ({
-				"_fn": "getData"
-			}, opts)).then (result => {
-				let recs = result.recs.map (rec => {
-					let newRec = {};
-					
-					result.cols.forEach ((col, i) => {
-						newRec [col.code] = rec [i];
-					});
-					parseRecDates (newRec);
-					
-					return newRec;
-				});
-				let records = recs.map (data => {
-					if (me.map ["record"][data.id]) {
-						return me.map ["record"][data.id];
-					} else {
-						data._model = opts.model;
-						
-						let record = factory ({rsc: "record", data, store: me});
-						
-						me.map ["record"][data.id] = record;
-						
-						return record;
-					}
-				});
-				if (opts.sort && recs.length && recs [0].hasOwnProperty ("order")) {
-					records = records.sort ((a, b) => a.order > b.order || -1);
-				}
-				resolve (records);
-			}, err => reject (err));
+		let result = await request (this, Object.assign ({
+			"_fn": "getData"
+		}, opts));
+		let recs = result.recs.map (rec => {
+			let newRec = {};
+
+			result.cols.forEach ((col, i) => {
+				newRec [col.code] = rec [i];
+			});
+			parseDates (newRec);
+
+			return newRec;
 		});
+		let records = recs.map (data => {
+			if (this.map ["record"][data.id]) {
+				return this.map ["record"][data.id];
+			} else {
+				data._model = opts.model;
+
+				let record = factory ({rsc: "record", data, store: this});
+
+				this.map ["record"][data.id] = record;
+
+				return record;
+			}
+		});
+		if (opts.sort && recs.length && recs [0].hasOwnProperty ("order")) {
+			records = records.sort ((a, b) => a.order > b.order || -1);
+		}
+		return records;
 	}
 	
-	getOpts (code) {
-		let v = JSON.parse (localStorage.getItem (this.code) || "{}");
-		
-		return v [code] || {};
-	}
-	
+	getOpts = code => JSON.parse (localStorage.getItem (this.code) || "{}") [code] || {};
+
 	setOpts (code, opts) {
 		let v = JSON.parse (localStorage.getItem (this.code) || "{}");
-		
 		v [code] = opts || {};
 		localStorage.setItem (this.code, JSON.stringify (v));
 	}
 	
 	abortAction () {
-		let me = this;
-		
 		if (!isServer ()) {
-			request (me, {
+			request (this, {
 				"_fn": "abortAction"
 			}).then (() => {}, () => {});
 		}
-		me.abort = true;
+		this.abort = true;
 	}
 	
 	getModelRecords (native) {
@@ -873,6 +654,7 @@ export {
 	factory,
 	Record,
 	isServer,
+	request,
 	execute
 };
 
@@ -881,5 +663,6 @@ export default {
 	factory,
 	Record,
 	isServer,
+	request,
 	execute
 };
