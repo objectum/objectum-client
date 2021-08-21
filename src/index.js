@@ -286,14 +286,7 @@ class Store {
 		this.map [rsc][o.getPath ()] = o;
 
 		if (rsc == "record" && attrs ["_model"]) {
-			let m = this.map ["model"][attrs ["_model"]];
-
-			if (m.isDictionary ()) {
-				delete this.map ["dict"][m.get ("id")];
-				delete this.map ["dict"][m.getPath ()];
-				delete this.dict [m.get ("id")];
-				delete this.dict [m.getPath ()];
-			}
+			this.unloadDict (attrs ["_model"]);
 		}
 		if (rsc == "property") {
 			this.map ["model"][o.get ("model")].attrs [o.get ("code")] = o;
@@ -305,13 +298,21 @@ class Store {
 		}
 		return o;
 	}
-	
+
+	// todo: store.dict?
 	async removeRsc (rsc, id) {
 		await request (this, {
 			_fn: "remove",
 			_rsc: rsc,
 			id
 		});
+		if (rsc == "record") {
+			let o = this.map ["record"][id];
+
+			if (o) {
+				this.unloadDict (o._model);
+			}
+		}
 		if (rsc == "property") {
 			let o = this.map ["property"][id];
 
@@ -465,10 +466,14 @@ class Store {
 			}, err => reject (err));
 		});
 */
+		let m = this.getModel (id);
+		let path = m.getPath ();
+		id = m.id;
+
 		if (this.map ["dict"][id]) {
 			return this.map ["dict"][id];
 		}
-		let records = await this.getRecords ({model: id, sort: true});
+		let records = await this.getRecords ({model: path, sort: true});
 
 		this.map ["dict"][id] = records;
 		this.dict [id] = {};
@@ -480,9 +485,23 @@ class Store {
 				this.dict [id][record.code] = record;
 			}
 		});
+		this.map ["dict"][path] = this.map ["dict"][id];
+		this.dict [path] = this.dict [id];
+
 		return records;
 	}
-	
+
+	unloadDict (id) {
+		let m = this.getModel (id);
+
+		if (this.map ["dict"][m.get ("id")]) {
+			delete this.map ["dict"][m.get ("id")];
+			delete this.map ["dict"][m.getPath ()];
+			delete this.dict [m.get ("id")];
+			delete this.dict [m.getPath ()];
+		}
+	}
+
 	getLog = (recordId, propertyId) => request (this, {
 		"_fn": "getLog",
 		"record": recordId,
