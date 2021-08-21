@@ -154,7 +154,7 @@ class _Record extends _Rsc {
 		if (opts.data && opts.data ["_model"]) {
 			let m = this.store.map ["model"][opts.data ["_model"]];
 
-			let define = function () {
+			let define = () => {
 				let a = ["id", "_model", ...Object.keys (m.properties)];
 				
 				for (let i = 0; i < a.length; i ++) {
