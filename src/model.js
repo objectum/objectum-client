@@ -72,7 +72,9 @@ class _Rsc {
 		}
 	}
 	
-	get = a => this._data [a];
+	get (a) {
+		return this._data [a];
+	}
 
 	set (a, v) {
 		if (typeof a == "object") {
@@ -86,7 +88,9 @@ class _Rsc {
 		this._data [a] = v;
 	}
 	
-	remove = () => this._removed = true;
+	remove () {
+		this._removed = true;
+	}
 
 	async sync () {
 		if (this._removed) {
@@ -140,9 +144,13 @@ class _Rsc {
 		}
 	}
 
-	getLabel = () => `${this.get ("name")} (${this.getPath ()}: ${this.get ("id")})`;
+	getLabel () {
+		return`${this.get ("name")} (${this.getPath ()}: ${this.get ("id")})`;
+	}
 
-	getOpts = () => JSON.parse (this.get ("opts") || "{}");
+	getOpts (property = "opts") {
+		return JSON.parse (this.get (property) || "{}");
+	}
 };
 
 class _Record extends _Rsc {
@@ -229,8 +237,6 @@ class _Record extends _Rsc {
 			return `/files/${this.id}-${model.properties [property].id}-${this [property]}`;
 		}
 	}
-	
-	getOpts = property => JSON.parse (this [property || "opts"] || "{}");
 };
 
 class _Model extends _Rsc {
@@ -239,11 +245,17 @@ class _Model extends _Rsc {
 		super (opts);
 	}
 
-	getTable = () => `${this.get ("code").toLowerCase ()}_${this.get ("id")}`;
+	getTable () {
+		return `${this.get ("code").toLowerCase ()}_${this.get ("id")}`;
+	}
 	
-	isDictionary = () => this.getPath ().substr (0, 2) == "d.";
+	isDictionary () {
+		return this.getPath ().substr (0, 2) == "d.";
+	}
 	
-	isTable = () => this.getPath ().substr (0, 2) == "t.";
+	isTable () {
+		return this.getPath ().substr (0, 2) == "t.";
+	}
 };
 
 class _Property extends _Rsc {
@@ -252,9 +264,13 @@ class _Property extends _Rsc {
 		super (opts);
 	}
 	
-	getPath = () => `${this.store.map ["model"][this.get ("model")].getPath ()}.${this.get ("code")}`;
+	getPath () {
+		return `${this.store.map ["model"][this.get ("model")].getPath ()}.${this.get ("code")}`;
+	}
 	
-	getField = () => `${this.get ("code").toLowerCase ()}_${this.get ("id")}`;
+	getField () {
+		return `${this.get ("code").toLowerCase ()}_${this.get ("id")}`;
+	}
 	
 	getLogField () {
 		let f = "fnumber";
@@ -271,7 +287,9 @@ class _Property extends _Rsc {
 		return f;
 	}
 	
-	getLabel = () => `${this.get ("name")} (${this.get ("code")}: ${this.get ("id")})`;
+	getLabel () {
+		return `${this.get ("name")} (${this.get ("code")}: ${this.get ("id")})`;
+	}
 };
 
 class _Query extends _Rsc {
@@ -306,9 +324,13 @@ class _Column extends _Rsc {
 		super (opts);
 	}
 	
-	getPath = () => `${this.store.map ["query"][this.get ("query")].getPath ()}.${this.get ("code")}`;
+	getPath () {
+		return `${this.store.map ["query"][this.get ("query")].getPath ()}.${this.get ("code")}`;
+	}
 	
-	getLabel = () => `${this.get ("name")} (${this.get ("code")}: ${this.get ("id")})`;
+	getLabel () {
+		return `${this.get ("name")} (${this.get ("code")}: ${this.get ("id")})`;
+	}
 };
 
 function factory (opts) {
