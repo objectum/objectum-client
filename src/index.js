@@ -1,5 +1,5 @@
-import {factory, Record} from "./model.js";
-import {parseDates, request, isServer, execute} from "./request.js";
+const {factory, Record} = require ("./model");
+const {parseDates, request, isServer, execute} = require ("./request");
 
 class Store {
 	constructor () {
@@ -668,16 +668,7 @@ class Store {
 	}
 };
 
-export {
-	Store,
-	factory,
-	Record,
-	isServer,
-	request,
-	execute
-};
-
-export default {
+module.exports = {
 	Store,
 	factory,
 	Record,

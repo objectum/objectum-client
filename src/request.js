@@ -166,7 +166,7 @@ function execute (fn, opts) {
 
 const request = isServer () ? serverRequest : clientRequest;
 
-export {
+module.exports = {
 	parseDates,
 	request,
 	isServer,
