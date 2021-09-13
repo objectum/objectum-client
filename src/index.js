@@ -365,27 +365,27 @@ class Store {
 		this.inTransaction = false;
 	}
 	
-	getRecord = async (id) => await this.getRsc ("record", id);
+	getRecord = id => this.getRsc ("record", id);
 
-	createRecord = async (attrs) => await this.createRsc ("record", attrs);
+	createRecord = attrs => this.createRsc ("record", attrs);
 
-	removeRecord = async (id) => await this.removeRsc ("record", id);
+	removeRecord = id => this.removeRsc ("record", id);
 
-	createModel = async (attrs) => await this.createRsc ("model", attrs);
+	createModel = attrs => this.createRsc ("model", attrs);
 
-	removeModel  = async (id) => await this.removeRsc ("model", id);
+	removeModel  = id => this.removeRsc ("model", id);
 
-	createQuery = async (attrs) => await this.createRsc ("query", attrs);
+	createQuery = attrs => this.createRsc ("query", attrs);
 
-	removeQuery = async (id) => await this.removeRsc ("query", id);
+	removeQuery = id => this.removeRsc ("query", id);
 
-	createProperty = async (attrs) => await this.createRsc ("property", attrs);
+	createProperty = attrs => this.createRsc ("property", attrs);
 
-	removeProperty = async (id) => await this.removeRsc ("property", id);
+	removeProperty = id => this.removeRsc ("property", id);
 
-	createColumn = async (attrs) => await this.createRsc ("column", attrs);
+	createColumn = attrs => this.createRsc ("column", attrs);
 
-	removeColumn = async (id) => await this.removeRsc ("column", id);
+	removeColumn = id => this.removeRsc ("column", id);
 
 	getModel (id) {
 		let o = this.map ["model"][id];
@@ -502,7 +502,7 @@ class Store {
 		}
 	}
 
-	getLog = async (recordId, propertyId) => await request (this, {
+	getLog = (recordId, propertyId) => request (this, {
 		"_fn": "getLog",
 		"record": recordId,
 		"property": propertyId
