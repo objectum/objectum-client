@@ -666,6 +666,21 @@ class Store {
 		}
 		return records;
 	}
+	async transaction (description, fn) {
+		if (typeof (description) == "function") {
+			fn = description;
+			description = "";
+		}
+		await this.startTransaction (description);
+
+		try {
+			await fn ();
+			await this.commitTransaction ();
+		} catch (err) {
+			await this.rollbackTransaction ();
+			throw err;
+		}
+	}
 };
 
 export {
