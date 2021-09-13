@@ -1,4 +1,4 @@
-const {request, parseDates} = require ("./request");
+import {request, parseDates} from "./request";
 
 class _Rsc {
 	constructor ({rsc, row, data, store}) {
@@ -371,7 +371,11 @@ function factory (opts) {
 
 const Record = _Record;
 
-module.exports = {
+export {
+	factory,
+	Record
+};
+export default {
 	factory,
 	Record
 };
