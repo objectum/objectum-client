@@ -4,7 +4,6 @@
   "description": "Isomorphic client for objectum platform",
   "main": "lib/index.js",
   "module": "es/index.js",
-  "type": "module",
   "files": [
     "es",
     "lib",
