@@ -109,10 +109,10 @@ class Store {
 		}
 	}
 	
-	callListeners (event, opts) {
+	async callListeners (event, opts) {
 		if (this.listeners [event]) {
 			for (let i = 0; i < this.listeners [event].length; i ++) {
-				this.listeners [event][i] (opts);
+				await execute (this.listeners [event][i], opts);
 			}
 		}
 	}
@@ -249,7 +249,7 @@ class Store {
 		this.roleCode = data.roleCode;
 		this.menuId = data.menuId;
 		this.code = data.code;
-		this.callListeners ("connect", data);
+		await this.callListeners ("connect", data);
 
 		return {
 			sid: data.sessionId, userId: data.userId, roleId: data.roleId, roleCode: data.roleCode, menuId: data.menuId, code: data.code, name: data.name
