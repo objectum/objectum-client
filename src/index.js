@@ -674,8 +674,9 @@ class Store {
 		await this.startTransaction (description);
 
 		try {
-			await fn ();
+			let result = await fn ();
 			await this.commitTransaction ();
+			return result;
 		} catch (err) {
 			await this.rollbackTransaction ();
 			throw err;
