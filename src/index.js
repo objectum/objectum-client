@@ -175,8 +175,11 @@ class Store {
 			revision: this.revision
 		});
 		this.revision = data.revision;
-		data.records.forEach (id => delete this.map ["record"][id]);
 
+		//data.records.forEach (id => delete this.map ["record"][id]);
+		if (data.records.length) {
+			await this.callListeners ("remoteChange", data.records);
+		}
 		if (data.progress && this.progress [this.sid]) {
 			this.progress [this.sid] (data.progress);
 		}
