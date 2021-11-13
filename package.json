@@ -1,34 +1,34 @@
 {
-  "name": "objectum-client",
-  "version": "1.2.34",
-  "description": "Isomorphic client for objectum platform",
-  "main": "lib/index.js",
-  "module": "es/index.js",
-  "files": [
-    "es",
-    "lib",
-    "umd",
-    "src"
-  ],
-  "scripts": {
-    "build": "nwb build-web-module",
-    "clean": "nwb clean-module",
-    "prepublishOnly": "npm run build",
-    "test": "nwb test",
-    "test:coverage": "nwb test --coverage",
-    "test:watch": "nwb test --server"
-  },
-  "dependencies": {
-    "form-data": "^3.0.0"
-  },
-  "devDependencies": {
-    "nwb": "0.23.x"
-  },
-  "author": "Dmitriy Samortsev",
-  "homepage": "https://github.com/objectum/objectum-client#readme",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/objectum/objectum-client.git"
-  }
+    "name": "objectum-client",
+    "version": "1.2.35",
+    "description": "Isomorphic client for objectum platform",
+    "main": "lib/index.js",
+    "module": "es/index.js",
+    "files": [
+        "es",
+        "lib",
+        "umd",
+        "src"
+    ],
+    "scripts": {
+        "build": "nwb build-web-module",
+        "clean": "nwb clean-module",
+        "prepublishOnly": "npm run build",
+        "test": "nwb test",
+        "test:coverage": "nwb test --coverage",
+        "test:watch": "nwb test --server"
+    },
+    "dependencies": {
+        "form-data": "^3.0.0"
+    },
+    "devDependencies": {
+        "nwb": "0.23.x"
+    },
+    "author": "Dmitriy Samortsev",
+    "homepage": "https://github.com/objectum/objectum-client#readme",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/objectum/objectum-client.git"
+    }
 }
