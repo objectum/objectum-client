@@ -55,10 +55,14 @@ async function clientRequest (store, json) {
 	}
 	prepareDates (json);
 
-	let res = await fetch (`${store.url}${store.sid ? `?sid=${store.sid}` : ``}`, {
-		headers: {
-			"Content-Type": "application/json; charset=utf-8"
-		},
+	let headers = {
+		"Content-Type": "application/json; charset=utf-8"
+	}
+	if (store.accessToken) {
+		headers ["Authorization"] = `Bearer ${store.accessToken}`;
+	}
+	let res = await fetch (`${store.url}`, {
+		headers,
 		method: "POST",
 		body: JSON.stringify (json)
 	});
@@ -66,6 +70,7 @@ async function clientRequest (store, json) {
 
 	if (data.error) {
 		console.error (data);
+		store.callListeners ("error", {request: json, response: data, error: data.error});
 		throw new Error (data.error);
 	}
 	updateDates (data);
@@ -97,15 +102,19 @@ function serverRequest (store, json) {
 		if (json._trace) {
 			json._trace = [["serverRequest-start", new Date ().getTime ()]];
 		}
+		let headers = {
+			"Content-Type": "application/json; charset=utf-8",
+			"Content-Length": Buffer.byteLength (data, "utf8")
+		};
+		if (store.accessToken) {
+			headers ["Authorization"] = `Bearer ${store.accessToken}`;
+		}
 		let req = store.http.request ({
 			host: store.host,
 			port: store.port,
-			path: `${store.path}${store.sid ? `?sid=${store.sid}` : ``}`,
+			path: `${store.path}`,
 			method: "POST",
-			headers: {
-				"Content-Type": "application/json; charset=utf-8",
-				"Content-Length": Buffer.byteLength (data, "utf8")//,
-			}
+			headers
 		}, function (res) {
 			res.setEncoding ("utf8");
 
@@ -122,7 +131,8 @@ function serverRequest (store, json) {
 						resData = JSON.parse (resData);
 
 						if (resData.error) {
-							console.error ("request", data);
+							console.error ("request", data, "error", resData.error);
+							store.callListeners ("error", {request: json, response: resData, error: resData.error});
 							return reject (new Error (resData.error));
 						} else {
 							updateDates (resData);
@@ -146,6 +156,7 @@ function serverRequest (store, json) {
 		});
 		req.on ("error", function (err) {
 			reqErr = err;
+			store.callListeners ("error", {request: json, response: resData, error: err});
 			reject (err);
 		});
 		req.end (data);
@@ -164,7 +175,26 @@ function execute (fn, opts) {
 	});
 }
 
-const request = isServer () ? serverRequest : clientRequest;
+async function request (store, json) {
+	let requestInternal = isServer () ? serverRequest : clientRequest;
+
+	try {
+		return await requestInternal (store, json);
+	} catch (err) {
+		if (err.message == "401 Unauthenticated" && store.refreshToken) {
+			let authData = await requestInternal (store, {
+				_fn: "auth",
+				refreshToken: store.refreshToken
+			});
+			if (authData.accessToken) {
+				store.accessToken = authData.accessToken;
+				store.refreshToken = authData.refreshToken;
+				return await requestInternal (store, json);
+			}
+		}
+		throw err;
+	}
+}
 
 export {
 	parseDates,

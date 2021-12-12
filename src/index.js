@@ -1,5 +1,9 @@
+import urlModule from "url";
+import httpModule from "http";
+import httpsModule from "https";
+import FormData from "form-data";
 import {factory, Record} from "./model.js";
-import {parseDates, request, isServer, execute} from "./request";
+import {parseDates, request, isServer, execute} from "./request.js";
 
 class Store {
 	constructor () {
@@ -170,10 +174,18 @@ class Store {
 	}
 	
 	async informer () {
-		let data = await request (this, {
-			"_fn": "getNews",
-			revision: this.revision
-		});
+		let data;
+
+		try {
+			data = await request (this, {
+				"_fn": "getNews",
+				revision: this.revision
+			});
+		} catch (err) {
+			if (this.sid) {
+				return this.informerId = setTimeout (() => this.informer (), 5000);
+			}
+		}
 		this.revision = data.revision;
 
 		//data.records.forEach (id => delete this.map ["record"][id]);
@@ -245,8 +257,10 @@ class Store {
 			username,
 			password
 		});
-		if (data.sessionId) {
-			this.setSessionId (data.sessionId);
+		if (data.accessToken) {
+			this.sid = data.accessToken;
+			this.accessToken = data.accessToken;
+			this.refreshToken = data.refreshToken;
 		}
 		await this.load ();
 		this.informer ();
@@ -257,11 +271,12 @@ class Store {
 		this.roleCode = data.roleCode;
 		this.menuId = data.menuId;
 		this.code = data.code;
-		await this.callListeners ("connect", data);
 
-		return {
-			sid: data.sessionId, userId: data.userId, roleId: data.roleId, roleCode: data.roleCode, menuId: data.menuId, code: data.code, name: data.name
+		let result = {
+			id: data.id, sid: data.accessToken, userId: data.userId, username, roleId: data.roleId, roleCode: data.roleCode, menuId: data.menuId, code: data.code, name: data.name
 		};
+		await this.callListeners ("connect", result);
+		return result;
 	}
 	
 	async getRsc (rsc, id) {
@@ -534,10 +549,10 @@ class Store {
 
 	setUrl (url) {
 		if (isServer ()) {
-			let opts = require ("url").parse (url);
+			let opts = urlModule.parse (url);
 			
 			this.url = url;
-			this.http = opts.protocol == "https:" ? require ("https") : require ("http");
+			this.http = opts.protocol == "https:" ? httpsModule : httpModule;
 			this.host = opts.hostname;
 			this.port = opts.port || (opts.protocol == "https:" ? 443 : 80);
 			this.path = opts.path;
@@ -551,8 +566,6 @@ class Store {
 			let formData;
 
 			if (isServer ()) {
-				let FormData = require ("form-data");
-
 				formData = new FormData ();
 			} else {
 				formData = new FormData ();
@@ -573,7 +586,10 @@ class Store {
 				formData.submit ({
 					host: this.host,
 					port: this.port,
-					path: `${this.path}upload?sid=${this.sid}`,
+					path: `${this.path}upload`,
+					headers: {
+						Authorization: `Bearer ${this.accessToken}`
+					}
 				}, function (err, res) {
 					if (err) {
 						return reject (err);
@@ -581,9 +597,12 @@ class Store {
 					resolve (res.statusCode);
 				});
 			} else {
-				fetch (`${url}/upload?sid=${this.sid}`, {
+				fetch (`${url}/upload`, {
 					method: "POST",
-					body: formData
+					body: formData,
+					headers: {
+						Authorization: `Bearer ${this.accessToken}`
+					}
 				}).then (resolve).catch (reject);
 			}
 		});

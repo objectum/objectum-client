@@ -1,4 +1,4 @@
-import {request, parseDates} from "./request";
+import {request, parseDates} from "./request.js";
 
 class _Rsc {
 	constructor ({rsc, row, data, store}) {
