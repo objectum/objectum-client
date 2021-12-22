@@ -709,6 +709,10 @@ class Store {
 			throw err;
 		}
 	}
+
+	getStat = () => request (this, {
+		"_fn": "getStat"
+	});
 };
 
 export {
