@@ -3,7 +3,7 @@ import httpModule from "http";
 import httpsModule from "https";
 import FormData from "form-data";
 import {factory, Record} from "./model.js";
-import {parseDates, request, isServer, execute} from "./request.js";
+import {parseDates, request, isServer, execute, parseJwt} from "./request.js";
 
 class Store {
 	constructor () {
@@ -248,14 +248,15 @@ class Store {
 		this.callListeners ("disconnect");
 	}
 	
-	async auth ({url, username, password}) {
+	async auth ({url, username, password, refreshToken}) {
 		if (url) {
 			this.setUrl (url);
 		}
 		let data = await request (this, {
 			"_fn": "auth",
 			username,
-			password
+			password,
+			refreshToken
 		});
 		if (data.accessToken) {
 			this.sid = data.accessToken;
@@ -265,7 +266,10 @@ class Store {
 		await this.load ();
 		this.informer ();
 
-		this.username = username;
+		if (refreshToken) {
+			Object.assign (data, parseJwt (refreshToken));
+		}
+		this.username = data.username;
 		this.userId = data.userId;
 		this.roleId = data.roleId;
 		this.roleCode = data.roleCode;
@@ -273,7 +277,17 @@ class Store {
 		this.code = data.code;
 
 		let result = {
-			id: data.id, sid: data.accessToken, userId: data.userId, username, roleId: data.roleId, roleCode: data.roleCode, menuId: data.menuId, code: data.code, name: data.name
+			id: data.id,
+			sid: data.accessToken,
+			accessToken: data.accessToken,
+			refreshToken: data.refreshToken,
+			userId: data.userId,
+			username: data.username,
+			roleId: data.roleId,
+			roleCode: data.roleCode,
+			menuId: data.menuId,
+			code: data.code,
+			name: data.name
 		};
 		await this.callListeners ("connect", result);
 		return result;
@@ -721,7 +735,8 @@ export {
 	Record,
 	isServer,
 	request,
-	execute
+	execute,
+	parseJwt
 };
 export default {
 	Store,
@@ -729,5 +744,6 @@ export default {
 	Record,
 	isServer,
 	request,
-	execute
+	execute,
+	parseJwt
 };
