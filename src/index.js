@@ -247,7 +247,11 @@ class Store {
 		this.roleId = null;
 		this.roleCode = null;
 		this.menuId = null;
-		clearTimeout (this.informerId);
+
+		if (this.informerId) {
+			clearTimeout (this.informerId);
+			this.informerId = null;
+		}
 		this.callListeners ("disconnect");
 	}
 	
@@ -268,11 +272,9 @@ class Store {
 		}
 		await this.load ();
 
-		if (this.informerId) {
-			clearTimeout (this.informerId);
+		if (!this.informerId) {
+			this.informer ();
 		}
-		this.informer ();
-
 		if (refreshToken) {
 			Object.assign (data, parseJwt (refreshToken));
 		}
