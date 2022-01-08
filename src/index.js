@@ -181,6 +181,7 @@ class Store {
 		try {
 			data = await request ({
 				"_fn": "getNews",
+				"_force": true,
 				revision: this.revision
 			});
 		} catch (err) {

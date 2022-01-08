@@ -41,7 +41,7 @@ function prepareDates (json) {
 	}
 }
 
-async function clientRequest (store, json) {
+async function clientRequest (json) {
 	if (store.abort && json._fn != "getNews") {
 		store.abort = false;
 		throw new Error ("Action aborted");
@@ -84,7 +84,7 @@ async function clientRequest (store, json) {
 	return data;
 }
 
-function serverRequest (store, json) {
+function serverRequest (json) {
 	if (store.abort && json._fn != "getNews") {
 		store.abort = false;
 		throw new Error ("Action aborted");
@@ -203,9 +203,18 @@ async function request (store, json) {
 
 let queue = [];
 
-function request (json) {
+async function request (json) {
+	if (json._force) {
+		let requestInternal = isServer () ? serverRequest : clientRequest;
+
+		try {
+			return await requestInternal (json);
+		} catch (err) {
+			console.error ("_force request queued");
+		}
+	}
 	return new Promise ((resolve, reject) => {
-		queue.push ({resolve, reject, store, json});
+		queue.push ({resolve, reject, json});
 	});
 }
 
@@ -215,25 +224,25 @@ async function requestQueue () {
 	if (!item) {
 		return setTimeout (requestQueue, 1000);
 	}
-	let {resolve, reject, store, json} = item;
+	let {resolve, reject, json} = item;
 	let requestInternal = isServer () ? serverRequest : clientRequest;
 	let result, error;
 
 	try {
-		result = await requestInternal (store, json);
+		result = await requestInternal (json);
 	} catch (err) {
 		error = err;
 
 		if (err.message == "401 Unauthenticated" && store.refreshToken) {
 			try {
-				let authData = await requestInternal (store, {
+				let authData = await requestInternal ({
 					_fn: "auth",
 					refreshToken: store.refreshToken
 				});
 				if (authData.accessToken) {
 					store.accessToken = authData.accessToken;
 					store.refreshToken = authData.refreshToken;
-					result = await requestInternal (store, json);
+					result = await requestInternal (json);
 					error = null;
 				} else {
 					store.refreshToken = null;
