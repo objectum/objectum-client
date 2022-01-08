@@ -242,6 +242,7 @@ async function requestQueue () {
 				if (authData.accessToken) {
 					store.accessToken = authData.accessToken;
 					store.refreshToken = authData.refreshToken;
+					await store.callListeners ("tokens", {accessToken: authData.accessToken, refreshToken: authData.refreshToken});
 					result = await requestInternal (json);
 					error = null;
 				} else {

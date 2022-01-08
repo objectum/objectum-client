@@ -299,6 +299,7 @@ class Store {
 			name: data.name
 		};
 		await this.callListeners ("connect", result);
+		await this.callListeners ("tokens", {accessToken: data.accessToken, refreshToken: data.refreshToken});
 		return result;
 	}
 	
