@@ -7,8 +7,6 @@ import {parseDates, request, isServer, execute, parseJwt, init} from "./request.
 
 class Store {
 	constructor (opts) {
-		init (this);
-
 		Object.assign (this, opts || {});
 
 		this.sid = null;
@@ -25,6 +23,7 @@ class Store {
 		this.informerId = null;
 		this.revision = 0;
 		this.inTransaction = false;
+		this.queue = [];
 		this.rscAttrs = {
 			"model": [
 				"id", "parent", "name", "code", "description", "order", "unlogged", "query", "opts", "start", "end", "schema", "record"
@@ -39,6 +38,7 @@ class Store {
 				"id", "query", "name", "code", "description", "order", "property", "area", "columnWidth", "opts", "start", "end", "schema", "record"
 			]
 		};
+		init (this);
 		this.initMap ();
 		this.addListener ("before-request", opts => {
 			let req = opts.request;
@@ -126,7 +126,7 @@ class Store {
 	}
 	
 	async load () {
-		let data = await request ({
+		let data = await request (this, {
 			"_fn": "getAll"
 		});
 		Object.keys (this.rscAttrs).forEach (rsc => {
@@ -183,7 +183,7 @@ class Store {
 		try {
 			let force = this.informerError ? false : true;
 			this.informerError = null;
-			data = await request ({
+			data = await request (this, {
 				"_fn": "getNews",
 				"_force": force,
 				revision: this.revision
@@ -231,7 +231,7 @@ class Store {
 		delete opts.progress;
 
 		try {
-			let data = await request (opts);
+			let data = await request (this, opts);
 
 			if (data && data.result) {
 				data = data.result;
@@ -264,7 +264,7 @@ class Store {
 		if (url) {
 			this.setUrl (url);
 		}
-		let data = await request ({
+		let data = await request (this, {
 			"_fn": "auth",
 			username,
 			password,
@@ -315,7 +315,7 @@ class Store {
 		if (o) {
 			return o;
 		} else {
-			let data = await request ({
+			let data = await request (this, {
 				_fn: "get",
 				_rsc: rsc,
 				id
@@ -329,7 +329,7 @@ class Store {
 	}
 	
 	async createRsc (rsc, attrs) {
-		let data = await request (Object.assign ({
+		let data = await request (this, Object.assign ({
 			_fn: "create",
 			_rsc: rsc
 		}, attrs));
@@ -354,7 +354,7 @@ class Store {
 
 	// todo: store.dict?
 	async removeRsc (rsc, id) {
-		await request ({
+		await request (this, {
 			_fn: "remove",
 			_rsc: rsc,
 			id
@@ -404,17 +404,17 @@ class Store {
 	}
 	
 	async startTransaction (description) {
-		await request ({"_fn": "startTransaction", description});
+		await request (this, {"_fn": "startTransaction", description});
 		this.inTransaction = true;
 	};
 	
 	async commitTransaction () {
-		await request ({"_fn": "commitTransaction"});
+		await request (this, {"_fn": "commitTransaction"});
 		this.inTransaction = false;
 	}
 	
 	async rollbackTransaction () {
-		await request ({"_fn": "rollbackTransaction"});
+		await request (this, {"_fn": "rollbackTransaction"});
 		this.inTransaction = false;
 	}
 	
@@ -481,7 +481,7 @@ class Store {
 	}
 	
 	async getData (opts) {
-		let result = await request (Object.assign ({
+		let result = await request (this, Object.assign ({
 			"_fn": "getData"
 		}, opts));
 
@@ -555,7 +555,7 @@ class Store {
 		}
 	}
 
-	getLog = (recordId, propertyId) => request ({
+	getLog = (recordId, propertyId) => request (this, {
 		"_fn": "getLog",
 		"record": recordId,
 		"property": propertyId
@@ -645,7 +645,7 @@ class Store {
 		if (!this.map ["model"][opts.model]) {
 			throw new Error (`unknown model: ${opts.model}`);
 		}
-		let result = await request (Object.assign ({
+		let result = await request (this, Object.assign ({
 			"_fn": "getData"
 		}, opts));
 		let recs = result.recs.map (rec => {
@@ -687,7 +687,7 @@ class Store {
 	
 	abortAction () {
 		if (!isServer ()) {
-			request ({
+			request (this, {
 				"_fn": "abortAction"
 			}).then (() => {}, () => {});
 		}
@@ -740,7 +740,7 @@ class Store {
 		}
 	}
 
-	getStat = () => request ({
+	getStat = () => request (this, {
 		"_fn": "getStat"
 	});
 };

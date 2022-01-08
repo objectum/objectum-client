@@ -104,7 +104,7 @@ class _Rsc {
 			}
 		}
 		if (Object.keys (attrs).length) {
-			let data = await request (Object.assign ({
+			let data = await request (this.store, Object.assign ({
 				_fn: "set",
 				_rsc: this._rsc,
 				id: this.get ("id")
@@ -218,7 +218,7 @@ class _Record extends _Rsc {
 	}
 	
 	async remote (opts) {
-		let data = await request (Object.assign ({
+		let data = await request (this.store, Object.assign ({
 			_model: this.store.getModel (this._model).getPath (),
 			id: this.get ("id")
 		}, opts));

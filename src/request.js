@@ -1,4 +1,3 @@
-let store;
 const isServer = () => typeof (window) === "undefined";
 
 function parseDates (rec) {
@@ -41,7 +40,7 @@ function prepareDates (json) {
 	}
 }
 
-async function clientRequest (json) {
+async function clientRequest (store, json) {
 	if (store.abort && json._fn != "getNews") {
 		store.abort = false;
 		throw new Error ("Action aborted");
@@ -84,7 +83,7 @@ async function clientRequest (json) {
 	return data;
 }
 
-function serverRequest (json) {
+function serverRequest (store, json) {
 	if (store.abort && json._fn != "getNews") {
 		store.abort = false;
 		throw new Error ("Action aborted");
@@ -201,36 +200,34 @@ async function request (store, json) {
 }
 */
 
-let queue = [];
-
-async function request (json) {
+async function request (store, json) {
 	if (json._force) {
 		let requestInternal = isServer () ? serverRequest : clientRequest;
-		return await requestInternal (json);
+		return await requestInternal (store, json);
 	}
 	return new Promise ((resolve, reject) => {
-		queue.push ({resolve, reject, json});
+		store.queue.push ({resolve, reject, json});
 	});
 }
 
-async function requestQueue () {
-	let item = queue.shift ();
+async function requestQueue (store) {
+	let item = store.queue.shift ();
 
 	if (!item) {
-		return setTimeout (requestQueue, 1000);
+		return setTimeout (() => requestQueue (store), 1000);
 	}
 	let {resolve, reject, json} = item;
 	let requestInternal = isServer () ? serverRequest : clientRequest;
 	let result, error;
 
 	try {
-		result = await requestInternal (json);
+		result = await requestInternal (store, json);
 	} catch (err) {
 		error = err;
 
 		if (err.message == "401 Unauthenticated" && store.refreshToken) {
 			try {
-				let authData = await requestInternal ({
+				let authData = await requestInternal (store, {
 					_fn: "auth",
 					refreshToken: store.refreshToken
 				});
@@ -238,7 +235,7 @@ async function requestQueue () {
 					store.accessToken = authData.accessToken;
 					store.refreshToken = authData.refreshToken;
 					await store.callListeners ("tokens", {accessToken: authData.accessToken, refreshToken: authData.refreshToken});
-					result = await requestInternal (json);
+					result = await requestInternal (store, json);
 					error = null;
 				} else {
 					store.refreshToken = null;
@@ -255,7 +252,7 @@ async function requestQueue () {
 	if (result) {
 		resolve (result);
 	}
-	setTimeout (requestQueue, 1);
+	setTimeout (() => requestQueue (store), 1);
 }
 
 function parseJwt (token) {
@@ -268,9 +265,8 @@ function parseJwt (token) {
 	return JSON.parse (jsonPayload);
 };
 
-function init (_store) {
-	store = _store;
-	requestQueue ();
+function init (store) {
+	requestQueue (store);
 }
 
 export {
