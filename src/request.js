@@ -1,3 +1,4 @@
+let store;
 const isServer = () => typeof (window) === "undefined";
 
 function parseDates (rec) {
@@ -175,6 +176,7 @@ function execute (fn, opts) {
 	});
 }
 
+/*
 async function request (store, json) {
 	let requestInternal = isServer () ? serverRequest : clientRequest;
 
@@ -190,10 +192,64 @@ async function request (store, json) {
 				store.accessToken = authData.accessToken;
 				store.refreshToken = authData.refreshToken;
 				return await requestInternal (store, json);
+			} else {
+				store.refreshToken = null;
 			}
 		}
 		throw err;
 	}
+}
+*/
+
+let queue = [];
+
+function request (json) {
+	return new Promise ((resolve, reject) => {
+		queue.push ({resolve, reject, store, json});
+	});
+}
+
+async function requestQueue () {
+	let item = queue.shift ();
+
+	if (!item) {
+		return setTimeout (requestQueue, 1000);
+	}
+	let {resolve, reject, store, json} = item;
+	let requestInternal = isServer () ? serverRequest : clientRequest;
+	let result, error;
+
+	try {
+		result = await requestInternal (store, json);
+	} catch (err) {
+		error = err;
+
+		if (err.message == "401 Unauthenticated" && store.refreshToken) {
+			try {
+				let authData = await requestInternal (store, {
+					_fn: "auth",
+					refreshToken: store.refreshToken
+				});
+				if (authData.accessToken) {
+					store.accessToken = authData.accessToken;
+					store.refreshToken = authData.refreshToken;
+					result = await requestInternal (store, json);
+					error = null;
+				} else {
+					store.refreshToken = null;
+				}
+			} catch (err) {
+				error = err;
+			}
+		}
+	}
+	if (error) {
+		reject (error);
+	} else
+	if (result) {
+		resolve (result);
+	}
+	setTimeout (requestQueue, 1);
 }
 
 function parseJwt (token) {
@@ -206,18 +262,24 @@ function parseJwt (token) {
 	return JSON.parse (jsonPayload);
 };
 
+function init (_store) {
+	store = _store;
+	requestQueue ();
+}
+
 export {
 	parseDates,
 	request,
 	isServer,
 	execute,
-	parseJwt
+	parseJwt,
+	init
 };
 export default {
 	parseDates,
 	request,
 	isServer,
 	execute,
-	parseJwt
+	parseJwt,
+	init
 };
-
