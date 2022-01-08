@@ -179,13 +179,16 @@ class Store {
 		let data;
 
 		try {
+			let force = this.informerError ? false : true;
+			this.informerError = null;
 			data = await request ({
 				"_fn": "getNews",
-				"_force": true,
+				"_force": force,
 				revision: this.revision
 			});
 		} catch (err) {
 			if (this.sid) {
+				this.informerError = err;
 				return this.informerId = setTimeout (() => this.informer (), 5000);
 			}
 		}
@@ -278,6 +281,7 @@ class Store {
 		if (refreshToken) {
 			Object.assign (data, parseJwt (refreshToken));
 		}
+		this.authId = data.id;
 		this.username = data.username;
 		this.userId = data.userId;
 		this.roleId = data.roleId;

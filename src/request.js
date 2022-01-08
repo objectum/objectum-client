@@ -206,12 +206,7 @@ let queue = [];
 async function request (json) {
 	if (json._force) {
 		let requestInternal = isServer () ? serverRequest : clientRequest;
-
-		try {
-			return await requestInternal (json);
-		} catch (err) {
-			console.error ("_force request queued");
-		}
+		return await requestInternal (json);
 	}
 	return new Promise ((resolve, reject) => {
 		queue.push ({resolve, reject, json});
@@ -249,6 +244,7 @@ async function requestQueue () {
 					store.refreshToken = null;
 				}
 			} catch (err) {
+				store.refreshToken = null;
 				error = err;
 			}
 		}
