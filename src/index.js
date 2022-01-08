@@ -6,8 +6,10 @@ import {factory, Record} from "./model.js";
 import {parseDates, request, isServer, execute, parseJwt, init} from "./request.js";
 
 class Store {
-	constructor () {
+	constructor (opts) {
 		init (this);
+
+		Object.assign (this, opts || {});
 
 		this.sid = null;
 		this.url = null;
@@ -275,7 +277,7 @@ class Store {
 		}
 		await this.load ();
 
-		if (!this.informerId) {
+		if (!this.informerId && !this.noInformer) {
 			this.informer ();
 		}
 		if (refreshToken) {
