@@ -1,7 +1,7 @@
 import urlModule from "url";
 import httpModule from "http";
 import httpsModule from "https";
-import FormData from "form-data";
+import ServerFormData from "form-data";
 import {factory, Record} from "./model.js";
 import {parseDates, request, isServer, execute, parseJwt, init} from "./request.js";
 
@@ -42,19 +42,19 @@ class Store {
 		this.initMap ();
 		this.addListener ("before-request", opts => {
 			let req = opts.request;
-			
+
 			if (req._rsc == "record") {
 				if (req._fn == "remove") {
 					let record = this.map ["record"][req.id];
-					
+
 					if (record) {
 						let m = this.getModel (record._model);
 						let id = m.getPath ();
-						
+
 						if (this.dict [id]) {
 							for (let i = 0; i < this.map ["dict"][id].length; i ++) {
 								let record2 = this.map ["dict"][id][i];
-								
+
 								if (!record2 || record2.id == record.id) {
 									this.map ["dict"][id].splice (i, 1);
 									break;
@@ -69,12 +69,12 @@ class Store {
 		this.addListener ("after-request", opts => {
 			let req = opts.request;
 			let res = opts.response;
-			
+
 			if (req._rsc == "record") {
 				if (req._fn == "create") {
 					let m = this.getModel (req._model);
 					let id = m.getPath ();
-					
+
 					if (this.dict [id]) {
 						this.getRecord (res.id).then (record => {
 							this.map ["dict"][id] = [record, ...this.map ["dict"][id]];
@@ -100,15 +100,15 @@ class Store {
 		};
 		this.dict = {};
 	}
-	
+
 	addListener (event, fn) {
 		this.listeners [event] = this.listeners [event] || [];
 		this.listeners [event].push (fn);
 	}
-	
+
 	removeListener (event, fn) {
 		this.listeners [event] = this.listeners [event] || [];
-		
+
 		for (let i = 0; i < this.listeners [event].length; i ++) {
 			if (this.listeners [event][i] == fn) {
 				this.listeners [event].splice (i, 1);
@@ -116,7 +116,7 @@ class Store {
 			}
 		}
 	}
-	
+
 	async callListeners (event, opts) {
 		if (this.listeners [event]) {
 			for (let i = 0; i < this.listeners [event].length; i ++) {
@@ -124,7 +124,7 @@ class Store {
 			}
 		}
 	}
-	
+
 	async load () {
 		let data = await request (this, {
 			"_fn": "getAll"
@@ -176,7 +176,7 @@ class Store {
 			}
 		});
 	}
-	
+
 	async informer () {
 		let data;
 
@@ -220,7 +220,7 @@ class Store {
 			}
 		}
 	}
-	
+
 	async remote (opts) {
 		this.progress [this.sid] = opts.progress;
 
@@ -244,7 +244,7 @@ class Store {
 			throw err;
 		}
 	}
-	
+
 	end () {
 		this.sid = null;
 		this.username = null;
@@ -259,7 +259,7 @@ class Store {
 		}
 		this.callListeners ("disconnect");
 	}
-	
+
 	async auth ({url, username, password, refreshToken}) {
 		if (url) {
 			this.setUrl (url);
@@ -308,7 +308,7 @@ class Store {
 		await this.callListeners ("tokens", {accessToken: data.accessToken, refreshToken: data.refreshToken});
 		return result;
 	}
-	
+
 	async getRsc (rsc, id) {
 		let o = this.map [rsc][id];
 
@@ -327,7 +327,7 @@ class Store {
 			return o;
 		}
 	}
-	
+
 	async createRsc (rsc, attrs) {
 		let data = await request (this, Object.assign ({
 			_fn: "create",
@@ -402,22 +402,22 @@ class Store {
 			*/
 		}
 	}
-	
+
 	async startTransaction (description) {
 		await request (this, {"_fn": "startTransaction", description});
 		this.inTransaction = true;
 	};
-	
+
 	async commitTransaction () {
 		await request (this, {"_fn": "commitTransaction"});
 		this.inTransaction = false;
 	}
-	
+
 	async rollbackTransaction () {
 		await request (this, {"_fn": "rollbackTransaction"});
 		this.inTransaction = false;
 	}
-	
+
 	getRecord = id => this.getRsc ("record", id);
 
 	createRecord = attrs => this.createRsc ("record", attrs);
@@ -442,44 +442,44 @@ class Store {
 
 	getModel (id) {
 		let o = this.map ["model"][id];
-		
+
 		if (o) {
 			return o;
 		} else {
 			throw new Error (`unknown model: ${id}`);
 		}
 	}
-	
+
 	getProperty (id) {
 		let o = this.map ["property"][id];
-		
+
 		if (o) {
 			return o;
 		} else {
 			throw new Error (`unknown property: ${id}`);
 		}
 	}
-	
+
 	getQuery (id) {
 		let o = this.map ["query"][id];
-		
+
 		if (o) {
 			return o;
 		} else {
 			throw new Error (`unknown query: ${id}`);
 		}
 	}
-	
+
 	getColumn (id) {
 		let o = this.map ["column"][id];
-		
+
 		if (o) {
 			return o;
 		} else {
 			throw new Error (`unknown column: ${id}`);
 		}
 	}
-	
+
 	async getData (opts) {
 		let result = await request (this, Object.assign ({
 			"_fn": "getData"
@@ -497,7 +497,7 @@ class Store {
 		});
 		return result;
 	}
-	
+
 	getRecs = async opts => (await this.getData (opts)).recs;
 
 	async getDict (id) {
@@ -512,9 +512,9 @@ class Store {
 			}).then (recs => {
 				this.map ["dict"][id] = recs;
 				this.dict [id] = {};
-				
+
 				recs.forEach (rec => this.dict [id][rec.id] = rec);
-				
+
 				resolve (recs);
 			}, err => reject (err));
 		});
@@ -580,7 +580,7 @@ class Store {
 	setUrl (url) {
 		if (isServer ()) {
 			let opts = urlModule.parse (url);
-			
+
 			this.url = url;
 			this.http = opts.protocol == "https:" ? httpsModule : httpModule;
 			this.host = opts.hostname;
@@ -596,7 +596,7 @@ class Store {
 			let formData;
 
 			if (isServer ()) {
-				formData = new FormData ();
+				formData = new ServerFormData ();
 			} else {
 				formData = new FormData ();
 			}
@@ -624,7 +624,29 @@ class Store {
 					if (err) {
 						return reject (err);
 					}
-					resolve (res.statusCode);
+					res.setEncoding ("utf8");
+					let resData
+
+					res.on ("data", function (d) {
+						if (resData) {
+							resData += d;
+						} else {
+							resData = d;
+						}
+					});
+					res.on ("end", function () {
+						try {
+							resData = JSON.parse (resData);
+
+							if (resData.error) {
+								reject(new Error(resData.error))
+							} else {
+								resolve (res.statusCode);
+							}
+						} catch (err) {
+							reject (err);
+						}
+					});
 				});
 			} else {
 				fetch (`${url}/upload`, {
@@ -633,11 +655,19 @@ class Store {
 					headers: {
 						Authorization: `Bearer ${this.accessToken}`
 					}
-				}).then (resolve).catch (reject);
+				}).then (res => {
+					const data = res.json()
+
+					if (data.error) {
+						reject(new Error(data.error))
+					} else {
+						resolve()
+					}
+				}).catch (reject);
 			}
 		});
 	}
-	
+
 	async getRecords (opts) {
 		if (!opts.model) {
 			throw new Error ("model not exist");
@@ -676,7 +706,7 @@ class Store {
 		}
 		return records;
 	}
-	
+
 	getOpts = code => JSON.parse (localStorage.getItem (this.code) || "{}") [code] || {};
 
 	setOpts (code, opts) {
@@ -684,7 +714,7 @@ class Store {
 		v [code] = opts || {};
 		localStorage.setItem (this.code, JSON.stringify (v));
 	}
-	
+
 	abortAction () {
 		if (!isServer ()) {
 			request (this, {
@@ -693,13 +723,13 @@ class Store {
 		}
 		this.abort = true;
 	}
-	
+
 	getModelRecords (native) {
 		let records = [], map = {};
-		
+
 		for (let id in this.map.model) {
 			let record = this.map.model [id];
-			
+
 			if (!map [record.id]) {
 				if (record.id >= 1000 || (native && record.id < 6)) {
 					records.push (record);
@@ -709,13 +739,13 @@ class Store {
 		}
 		return records;
 	}
-	
+
 	getQueryRecords () {
 		let records = [], map = {};
-		
+
 		for (let id in this.map.query) {
 			let record = this.map.query [id];
-			
+
 			if (record.id >= 1000 && !map [record.id]) {
 				records.push (record);
 				map [record.id] = true;
