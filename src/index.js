@@ -655,8 +655,8 @@ class Store {
 					headers: {
 						Authorization: `Bearer ${this.accessToken}`
 					}
-				}).then (res => {
-					const data = res.json()
+				}).then (async(res) => {
+					const data = await res.json()
 
 					if (data.error) {
 						reject(new Error(data.error))
