@@ -30,7 +30,7 @@ function updateDates (data) {
 function prepareDates (json) {
 	for (let a in json) {
 		let v = json [a];
-		
+
 		// min = 0, sec = 0, msec = 0 => date
 		if (v && typeof (v) == "object" && v.getMonth &&
 			!v.getMinutes () && !v.getSeconds () && !v.getMilliseconds ()
@@ -205,9 +205,13 @@ async function request (store, json) {
 		let requestInternal = isServer () ? serverRequest : clientRequest;
 		return await requestInternal (store, json);
 	}
-	return new Promise ((resolve, reject) => {
-		store.queue.push ({resolve, reject, json});
-	});
+	if (store.requestWithoutQueue) {
+		return requestWithoutQueue(store, json)
+	} else {
+		return new Promise ((resolve, reject) => {
+			store.queue.push ({resolve, reject, json});
+		});
+	}
 }
 
 async function requestQueue (store) {
@@ -253,6 +257,43 @@ async function requestQueue (store) {
 		resolve (result);
 	}
 	setTimeout (() => requestQueue (store), 1);
+}
+
+async function requestWithoutQueue (store, json) {
+	let requestInternal = isServer () ? serverRequest : clientRequest;
+	let result, error;
+
+	try {
+		result = await requestInternal (store, json);
+	} catch (err) {
+		error = err;
+
+		if (err.message == "401 Unauthenticated" && store.refreshToken) {
+			try {
+				let authData = await requestInternal (store, {
+					_fn: "auth",
+					refreshToken: store.refreshToken
+				});
+				if (authData.accessToken) {
+					store.accessToken = authData.accessToken;
+					store.refreshToken = authData.refreshToken;
+					await store.callListeners ("tokens", {accessToken: authData.accessToken, refreshToken: authData.refreshToken});
+					result = await requestInternal (store, json);
+					error = null;
+				} else {
+					store.refreshToken = null;
+				}
+			} catch (err) {
+				store.refreshToken = null;
+				error = err;
+			}
+		}
+	}
+	if (error) {
+		throw error
+	} else {
+		return result
+	}
 }
 
 function parseJwt (token) {

@@ -24,6 +24,7 @@ class Store {
 		this.revision = 0;
 		this.inTransaction = false;
 		this.queue = [];
+		this.requestWithoutQueue = false
 		this.rscAttrs = {
 			"model": [
 				"id", "parent", "name", "code", "description", "order", "unlogged", "query", "opts", "start", "end", "schema", "record"
@@ -661,7 +662,7 @@ class Store {
 					if (data.error) {
 						reject(new Error(data.error))
 					} else {
-						resolve()
+						resolve(res.status)
 					}
 				}).catch (reject);
 			}
